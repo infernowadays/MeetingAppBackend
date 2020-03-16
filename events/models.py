@@ -10,7 +10,7 @@ class GeoPoint(models.Model):
 
 
 class Category(models.Model):
-    name = models.TextField(null=False)
+    name = models.TextField(null=False, unique=True)
 
 
 class Event(models.Model):
@@ -22,24 +22,8 @@ class Event(models.Model):
     description = models.TextField(null=True)
     start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
-    members = models.ManyToManyField(User, related_name='events', through='Membership')
-    categories = models.ManyToManyField(Category, related_name='events', through='Categorization')
-
-
-class Categorization(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('event', 'category',)
-
-
-class Membership(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    member = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    class Meta:
-        unique_together = ('event', 'member',)
+    members = models.ManyToManyField(User, related_name='events')
+    categories = models.ManyToManyField(Category, related_name='events')
 
 
 class Invitation(models.Model):
@@ -50,6 +34,3 @@ class Invitation(models.Model):
         choices=Decision.choices(),
         default=Decision.DECLINE.value
     )
-
-    class Meta:
-        unique_together = ('event', 'member',)

@@ -3,9 +3,10 @@ from django.db import models
 
 
 class Ticket(models.Model):
-    name = models.TextField(default='')
+    name = models.TextField(null=False)
     price = models.FloatField(null=False)
-    seller = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE)
-    date = models.DateField(null=True)
+    creator = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now=True)
+    date = models.DateTimeField(null=True)
     description = models.TextField(null=True)
     sold = models.BooleanField(default=False)

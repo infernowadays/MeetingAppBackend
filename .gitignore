@@ -43,8 +43,3 @@ ENV/
 
 # PyCharm
 .idea
-
-# C extensions
-*.so
-
-

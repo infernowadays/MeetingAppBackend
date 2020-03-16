@@ -1,32 +1,25 @@
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
-from django.db import IntegrityError
-from django.http import JsonResponse
+from django.http import Http404
+from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
-from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from .serializers import *
 
 
 class SignUpView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        try:
-            first_name = self.request.data['name']
-            username = self.request.data['login']
-            password = self.request.data['password']
-        except KeyError:
-            return JsonResponse({'error': 'provide all the data'}, status=500, safe=False)
-
-        if username is None or first_name is None or password is None:
-            return JsonResponse({'error': 'provide all the data'}, status=500, safe=False)
-
-        try:
-            user = User.objects.create_user(username=username, first_name=first_name, password=password)
-        except IntegrityError as e:
-            return JsonResponse({'error': 'user exists'}, status=500, safe=False)
-
-        return JsonResponse({'name': user.first_name, 'login': user.username}, status=200, safe=False)
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class LoginView(APIView):
@@ -34,36 +27,39 @@ class LoginView(APIView):
 
     def post(self, request):
         try:
-            username = self.request.data['login']
+            username = self.request.data['username']
             password = self.request.data['password']
         except KeyError:
-            return JsonResponse({'error': 'provide all the data'}, status=500, safe=False)
-
-        if username is None or password is None:
-            return JsonResponse({'error': 'provide all the data'}, status=400)
+            raise Http404
 
         user = authenticate(username=username, password=password)
         if not user:
-            return JsonResponse({'error': 'invalid credentials'}, status=404)
+            raise Http404
         token, _ = Token.objects.get_or_create(user=user)
 
-        return JsonResponse({'token': token.key}, status=200, safe=False)
+        return Response({'token': token.key})
 
 
-class EditProfileView(APIView):
-    # permission_classes = (IsAuthenticated,)
-    # authentication_classes = (TokenAuthentication,)
+class ProfileView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
 
-    def put(self):
+    @staticmethod
+    def get_object(pk):
         try:
-            username = self.request.data['login']
-            password = self.request.data['password']
-        except KeyError:
-            return JsonResponse({'error': 'provide all the data'}, status=500, safe=False)
+            return User.objects.get(pk=pk)
+        except User.DoesNotExist:
+            raise Http404
 
-        user = User.objects.get(username=username)
-        user.username = username
-        user.password = password
-        user.save()
+    def get(self, request, pk):
+        user = self.get_object(pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return JsonResponse({'new username': user.username}, status=200, safe=False)
+    def put(self, request, pk):
+        user = self.get_object(pk)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

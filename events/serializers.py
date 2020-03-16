@@ -1,9 +1,7 @@
 from rest_framework import serializers
-from rest_framework.fields import CurrentUserDefault
 from rest_framework.serializers import ModelSerializer
 
-from .models import Event
-from token_auth.serializers import UserSerializer
+from .models import Event, Invitation
 
 
 class EventSerializer(ModelSerializer):
@@ -12,3 +10,10 @@ class EventSerializer(ModelSerializer):
     class Meta:
         model = Event
         fields = ('name', 'creator_id', 'created', 'description')
+
+
+class InvitationSerializer(ModelSerializer):
+    class Meta:
+        model = Invitation
+        fields = ('event', 'member', 'decision')
+        extra_kwargs = {'decision': {'required': False}}

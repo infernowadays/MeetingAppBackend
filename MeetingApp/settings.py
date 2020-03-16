@@ -82,7 +82,7 @@ WSGI_APPLICATION = 'MeetingApp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'meeting_app',
+        'NAME': 'meeting_app_backend',
         'USER': 'postgres',
         'PASSWORD': '1qaz@WSX',
         'HOST': '127.0.0.1',

@@ -1,19 +1,15 @@
 import firebase_admin
-from django.contrib.auth.models import User
-from django.db import IntegrityError
+from django.http import Http404
 from django.http import JsonResponse
 from firebase_admin import messaging, credentials
 from pyfcm import FCMNotification
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Event, Membership, Invitation
-from .serializers import EventSerializer
-import datetime
+from .serializers import EventSerializer, InvitationSerializer
 
 
 def init_app():
@@ -94,7 +90,7 @@ class PushView(APIView):
         # [END send_to_topic]
 
 
-class EventsView(APIView):
+class EventListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
@@ -112,126 +108,61 @@ class EventsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class GetEventInfoView(APIView):
+class EventDetailView(APIView):
     @staticmethod
-    def get(request, event_id):
-        event = Event.objects.filter(id=event_id)
-        serializer = EventSerializer(event, many=True)
+    def get_object(pk):
+        try:
+            return Event.objects.get(pk=pk)
+        except Event.DoesNotExist:
+            raise Http404
+
+    @staticmethod
+    def get(request, pk):
+        event = Event.objects.filter(pk=pk)
+        serializer = EventSerializer(event)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    def put(self, request, pk):
+        event = self.get_object(pk)
+        serializer = EventSerializer(event, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class GetInvitationView(APIView):
+    def delete(self, request, pk):
+        event = self.get_object(pk)
+        event.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SendInviteView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, request):
+        serializer = InvitationSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class RespondInviteView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
     @staticmethod
-    def get(request, invitation_id):
-        key = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
-
+    def get_object(pk):
         try:
-            user_id = Token.objects.get(key=key).user_id
-        except Token.DoesNotExist:
-            return JsonResponse({'error': 'token does not exist'}, status=404, safe=False)
-
-        try:
-            invitation = Invitation.objects.get(id=invitation_id)
+            return Invitation.objects.get(pk=pk)
         except Invitation.DoesNotExist:
-            return JsonResponse({'error': 'invitation does not exist'}, status=404, safe=False)
+            raise Http404
 
-        if invitation.member_id != user_id:
-            return JsonResponse({'error': 'no such invitation'}, status=404, safe=False)
-
-        try:
-            event = Event.objects.get(id=invitation.event_id)
-        except Event.DoesNotExist:
-            return JsonResponse({'error': 'event does not exist'}, status=404, safe=False)
-
-        response = {
-            'event': {
-                'id': event.id,
-                'name': event.name,
-                'description': event.description
-            }
-        }
-
-        return JsonResponse(response, status=200, safe=False)
-
-
-class InviteUsersView(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-
-    def post(self):
-        try:
-            event_id = self.request.data['queueId']
-            invitations = self.request.data['invitations']
-
-            logins = list([])
-            for invitation in invitations:
-                if invitation.get('login') is None:
-                    return JsonResponse({'error': 'invalid syntax'}, status=400, safe=False)
-
-                logins.append(invitation.get('login'))
-
-        except KeyError:
-            return JsonResponse({'error': 'provide all the data'}, status=500, safe=False)
-
-        try:
-            event = Event.objects.get(id=event_id)
-        except Event.DoesNotExist:
-            return JsonResponse({'error': 'event does not exist'}, status=404, safe=False)
-
-        for login in logins:
-            try:
-                member = User.objects.get(username=login)
-                try:
-                    Invitation.objects.create(event=event, member=member)
-                except IntegrityError:
-                    continue
-            except User.DoesNotExist:
-                continue
-
-        return JsonResponse({'status': 'Ok'}, status=200, safe=False)
-
-
-class RespondInvitationView(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-
-    def post(self, invitation_id):
-        try:
-            decision = self.request.data['decision']
-        except KeyError:
-            return JsonResponse({'error': 'provide all the data'}, status=500, safe=False)
-
-        try:
-            invitation = Invitation.objects.get(id=invitation_id)
-        except Invitation.DoesNotExist:
-            return JsonResponse({'error': 'invitation does not exist'}, status=404, safe=False)
-
-        invitation.decision = decision
-        invitation.save()
-
-        return JsonResponse({'status': 'Ok'}, status=200, safe=False)
-
-
-class EditEventView(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-
-    def put(self):
-        try:
-            event_id = self.request.data['event_id']
-            name = self.request.data['name']
-            date = self.request.data['date']
-            description = self.request.data['description']
-        except KeyError:
-            return JsonResponse({'error': 'provide all the data'}, status=500, safe=False)
-
-        event = Event.objects.get(id=event_id)
-        event.name = name
-        event.date = date
-        event.description = description
-        event.save()
-
-        return JsonResponse({'event was updated': event.description}, status=200, safe=False)
+    def put(self, request, pk):
+        invitation = self.get_object(pk)
+        serializer = InvitationSerializer(invitation, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
