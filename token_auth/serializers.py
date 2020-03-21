@@ -1,11 +1,14 @@
 from django.contrib.auth.models import User
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 
 class UserSerializer(ModelSerializer):
+    id = serializers.ReadOnlyField()
+
     class Meta:
         model = User
-        fields = ('username', 'password')
+        fields = ('id', 'username', 'password')
 
     def to_representation(self, obj):
         user = super(UserSerializer, self).to_representation(obj)
