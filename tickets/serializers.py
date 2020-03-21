@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.fields import CurrentUserDefault
 from rest_framework.serializers import ModelSerializer
 
-from .models import Event
+from events.models import Event
 from token_auth.serializers import UserSerializer
 
 

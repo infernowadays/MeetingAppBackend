@@ -5,11 +5,12 @@ from .models import Event, Invitation
 
 
 class EventSerializer(ModelSerializer):
+    id = serializers.ReadOnlyField()
     creator_id = serializers.PrimaryKeyRelatedField(source='creator', read_only=True)
 
     class Meta:
         model = Event
-        fields = ('name', 'creator_id', 'created', 'description')
+        fields = ('id', 'name', 'creator_id', 'created', 'description')
 
 
 class InvitationSerializer(ModelSerializer):

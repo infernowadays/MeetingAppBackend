@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import EventSerializer, InvitationSerializer
-
+from .models import *
 
 def init_app():
     cred = credentials.Certificate(
@@ -116,9 +116,8 @@ class EventDetailView(APIView):
         except Event.DoesNotExist:
             raise Http404
 
-    @staticmethod
-    def get(request, pk):
-        event = Event.objects.filter(pk=pk)
+    def get(self, request, pk):
+        event = self.get_object(pk)
         serializer = EventSerializer(event)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
