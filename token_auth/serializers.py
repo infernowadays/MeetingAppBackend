@@ -51,7 +51,7 @@ class UserProfileSerializer(ModelSerializer):
         user_validated = validated_data.pop('user')
         user = User.objects.create_user(**user_validated)
 
-        key_validated = validated_data.pop('firebase_token')
+        key_validated = validated_data.get('firebase_token')
         Token.objects.create(key=key_validated, user=user)
 
         profile = UserProfile.objects.create(user=user, **validated_data)
