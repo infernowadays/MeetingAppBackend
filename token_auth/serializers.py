@@ -1,6 +1,9 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ModelSerializer
+
+from .models import UserProfile
 
 
 class UserSerializer(ModelSerializer):
@@ -29,3 +32,29 @@ class UserSerializer(ModelSerializer):
         except KeyError:
             pass
         return user
+
+
+class TokenSerializer(ModelSerializer):
+    class Meta:
+        model = Token
+        fields = ['key']
+
+
+class UserProfileSerializer(ModelSerializer):
+    user = UserSerializer()
+
+    class Meta:
+        model = UserProfile
+        fields = '__all__'
+
+    def create(self, validated_data):
+        user_validated = validated_data.pop('user')
+        user = User.objects.create_user(**user_validated)
+
+        key_validated = validated_data.pop('firebase_token')
+        Token.objects.create(key=key_validated, user=user)
+
+        profile = UserProfile.objects.create(user=user, **validated_data)
+
+        return profile
+

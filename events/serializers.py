@@ -2,7 +2,8 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from token_auth.serializers import UserSerializer
-from .models import Event, Invitation, Category
+from .models import Event, Request, Category, GeoPoint
+import datetime
 
 
 class CategorySerializer(ModelSerializer):
@@ -11,20 +12,32 @@ class CategorySerializer(ModelSerializer):
         fields = ['name']
 
 
+class GeoPointSerializer(ModelSerializer):
+    class Meta:
+        model = GeoPoint
+        fields = ('address', 'longitude', 'latitude')
+
+
 class EventSerializer(ModelSerializer):
     id = serializers.ReadOnlyField()
     creator = UserSerializer(read_only=True)
     categories = CategorySerializer(read_only=True, many=True)
-
-    # creator_id = serializers.PrimaryKeyRelatedField(source='creator', read_only=True)
+    geoPoint = GeoPointSerializer()
 
     class Meta:
         model = Event
-        fields = ('id', 'name', 'creator', 'created', 'address', 'description', 'categories')
+        fields = ('id', 'creator', 'created', 'description', 'categories', 'geoPoint', 'date', 'time')
+
+    def create(self, validated_data):
+        geo_point_validated = validated_data.pop('geoPoint')
+        geo_point = GeoPoint.objects.create(**geo_point_validated)
+        event = Event.objects.create(geoPoint=geo_point, **validated_data)
+
+        return event
 
 
-class InvitationSerializer(ModelSerializer):
+class RequestSerializer(ModelSerializer):
     class Meta:
-        model = Invitation
+        model = Request
         fields = ('event', 'member', 'decision')
         extra_kwargs = {'decision': {'required': False}}

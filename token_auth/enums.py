@@ -1,10 +1,10 @@
 from enum import Enum
 
 
-class Decision(Enum):
-    ACCEPT = 'ACCEPT'
-    DECLINE = 'DECLINE'
-    NO_ANSWER = 'NO_ANSWER'
+class Sex(Enum):
+    MALE = 'MALE'
+    FEMALE = 'FEMALE'
+    UNSURE = 'UNSURE'
 
     @classmethod
     def choices(cls):

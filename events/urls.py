@@ -9,6 +9,6 @@ urlpatterns = [
     path('events', csrf_exempt(EventListView.as_view())),
     path('events/<int:pk>', csrf_exempt(EventDetailView.as_view())),
 
-    path('invitations', csrf_exempt(SendInviteView.as_view())),
-    path('invitations/<int:pk>/responses', csrf_exempt(RespondInviteView.as_view())),
+    path('requests', csrf_exempt(SendRequestView.as_view())),
+    path('requests/<int:pk>/responses', csrf_exempt(RespondRequestView.as_view())),
 ]

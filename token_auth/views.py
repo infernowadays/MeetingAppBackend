@@ -2,7 +2,6 @@ from django.contrib.auth import authenticate
 from django.http import Http404
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -15,7 +14,8 @@ class SignUpView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        serializer = UserSerializer(data=request.data)
+        # serializer = UserSerializer(data=request.data)
+        serializer = UserProfileSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -35,7 +35,7 @@ class LoginView(APIView):
         user = authenticate(username=username, password=password)
         if not user:
             raise Http404
-        token, _ = Token.objects.get_or_create(user=user)
+        token = Token.objects.get(user=user)
 
         return Response({'token': token.key})
 
@@ -63,3 +63,18 @@ class ProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class FirebaseTokenView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def put(self, request):
+        key = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
+        Token.objects.filter(key=key).update(key=request.data["key"])
+        try:
+            token = Token.objects.get(key=request.data["key"])
+        except Token.DoesNotExist:
+            raise Http404
+
+        return Response({"key": token.key}, status=status.HTTP_200_OK)

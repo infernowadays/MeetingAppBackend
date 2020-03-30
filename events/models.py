@@ -5,8 +5,9 @@ from .enums import Decision
 
 
 class GeoPoint(models.Model):
-    longitude = models.DecimalField(null=False, max_digits=20, decimal_places=20)
-    latitude = models.DecimalField(null=False, max_digits=20, decimal_places=20)
+    address = models.TextField(null=False)
+    longitude = models.FloatField(null=False, default=0.0)
+    latitude = models.FloatField(null=False, default=0.0)
 
 
 class Category(models.Model):
@@ -14,21 +15,19 @@ class Category(models.Model):
 
 
 class Event(models.Model):
-    name = models.TextField(null=False)
+    description = models.TextField(null=False, max_length=255)
+    date = models.DateField(null=False)
+    time = models.TimeField(null=True)
+    geoPoint = models.ForeignKey(GeoPoint, null=False, on_delete=models.CASCADE)
     creator = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now=True)
-    address = models.TextField(null=False, default='')
-    geo_point = models.ForeignKey(GeoPoint, null=True, on_delete=models.SET_NULL)
-    description = models.TextField(null=True)
-    start = models.DateTimeField(null=True)
-    end = models.DateTimeField(null=True)
     members = models.ManyToManyField(User, related_name='events')
-    categories = models.ManyToManyField(Category, related_name='events')
+    categories = models.ManyToManyField(Category, related_name='events', blank=True)
 
 
-class Invitation(models.Model):
+class Request(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    member = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     decision = models.CharField(
         max_length=10,
         choices=Decision.choices(),

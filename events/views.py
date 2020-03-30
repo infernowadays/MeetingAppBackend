@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import EventSerializer, InvitationSerializer
+from .serializers import EventSerializer, RequestSerializer
 from .models import *
 
 def init_app():
@@ -104,7 +104,7 @@ class EventListView(APIView):
     @staticmethod
     def get(request):
         events = Event.objects.filter(creator=request.user)
-        serializer = EventSerializer(events, many=True)
+        serializer = EventSerializer(events.order_by('-id'), many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -123,7 +123,7 @@ class EventDetailView(APIView):
 
     def put(self, request, pk):
         event = self.get_object(pk)
-        serializer = EventSerializer(event, data=request.data)
+        serializer = EventSerializer(event, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -135,32 +135,32 @@ class EventDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SendInviteView(APIView):
+class SendRequestView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
     def post(self, request):
-        serializer = InvitationSerializer(data=request.data, many=True)
+        serializer = RequestSerializer(data=request.data, many=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RespondInviteView(APIView):
+class RespondRequestView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
     @staticmethod
     def get_object(pk):
         try:
-            return Invitation.objects.get(pk=pk)
-        except Invitation.DoesNotExist:
+            return Request.objects.get(pk=pk)
+        except Request.DoesNotExist:
             raise Http404
 
     def put(self, request, pk):
-        invitation = self.get_object(pk)
-        serializer = InvitationSerializer(invitation, data=request.data, partial=True)
+        my_request = self.get_object(pk)
+        serializer = RequestSerializer(my_request, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
