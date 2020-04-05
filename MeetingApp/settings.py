@@ -11,9 +11,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+
 import firebase_admin
 from firebase_admin import credentials
-
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,6 +29,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']
 
+ASGI_APPLICATION = "MeetingApp.routing.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +53,8 @@ INSTALLED_APPS = [
     'token_auth',
     'events',
     'tickets',
+    'chat',
+    'channels',
 ]
 
 MIDDLEWARE = [
