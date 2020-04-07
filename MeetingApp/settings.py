@@ -15,7 +15,7 @@ import os
 import dj_database_url
 import environ
 import firebase_admin
-import djano_heroku
+import django_heroku
 from firebase_admin import credentials
 
 # Set up environ
