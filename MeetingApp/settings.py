@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+import dj_database_url
 import environ
 import firebase_admin
 from firebase_admin import credentials
@@ -100,6 +101,7 @@ WSGI_APPLICATION = 'MeetingApp.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
+        engine='django.db.backends.postgresql',
         default=env('DATABASE_URL')
     )}
 # DATABASES = {
@@ -173,3 +175,6 @@ cred = credentials.Certificate(
     }
 )
 firebase_admin.initialize_app(cred)
+
+# Activate Heroku
+django_heroku.settings(locals())
