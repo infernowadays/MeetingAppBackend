@@ -36,8 +36,8 @@ class TokenAuthMiddlewareInstance:
     async def __call__(self, receive, send):
         headers = dict(self.scope['headers'])
         if b'authorization' in headers:
-            self.scope['user'] = await get_user(headers)
             close_old_connections()
+            self.scope['user'] = await get_user(headers)
         inner = self.inner(self.scope)
         return await inner(receive, send)
 

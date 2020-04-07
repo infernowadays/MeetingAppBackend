@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 
 # from .websocket.utils import check_if_websocket_is_active
 from .websocket.messaging import send_event_via_websocket_group_consumer
+from django.db import close_old_connections
 
 
 # from .fcm.messaging import send_event_via_fcm
@@ -24,7 +25,7 @@ class EventSenderConsumer(AsyncConsumer):
 
 
         # if check_if_websocket_is_active(user):
-
+        close_old_connections()
         user = await database_sync_to_async(User.objects.get)(id=(message['user_id_str']))
 
         print("Realtime: event_sender_consumer_send_event - websocket branch")
