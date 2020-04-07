@@ -37,7 +37,10 @@ class EventSerializer(ModelSerializer):
 
 
 class RequestSerializer(ModelSerializer):
+    from_user = UserSerializer(read_only=True)
+    to_user = UserSerializer(read_only=True)
+
     class Meta:
         model = Request
-        fields = ('event', 'member', 'decision')
+        fields = '__all__'
         extra_kwargs = {'decision': {'required': False}}

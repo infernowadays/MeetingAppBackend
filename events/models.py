@@ -27,7 +27,10 @@ class Event(models.Model):
 
 class Request(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE, related_name='to_user')
+    from_user = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE,
+                                  related_name='from_user')
+    created = models.DateTimeField(auto_now=True)
     decision = models.CharField(
         max_length=10,
         choices=Decision.choices(),

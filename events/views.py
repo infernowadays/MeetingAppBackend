@@ -12,6 +12,9 @@ from rest_framework.views import APIView
 from .serializers import EventSerializer, RequestSerializer
 from .models import *
 
+from realtime.messaging import send_event_request
+
+
 def init_app():
     cred = credentials.Certificate(
         {
@@ -140,14 +143,35 @@ class SendRequestView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def post(self, request):
-        serializer = RequestSerializer(data=request.data, many=True)
+        serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            to_user = User.objects.get(id=self.request.data['to_user_id'])
+
+            serializer.save(from_user=self.request.user, to_user=to_user)
+
+            send_event_request(
+                event_request=Request.objects.get(id=serializer.data['id'])
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class RespondRequestView(APIView):
+            # user=received_friend_request.from_user,
+            # other_user=received_friend_request.to_user
+
+        # send_created_friend_request(
+        #     friend_request=friend_request,
+        # )
+
+        # serializer = RequestSerializer(data=request.data, many=True)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReceiveRequestView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
@@ -157,6 +181,33 @@ class RespondRequestView(APIView):
             return Request.objects.get(pk=pk)
         except Request.DoesNotExist:
             raise Http404
+
+        # Accept a friend request from the user passed in to the 'username' query parameter
+
+    def post(self, request, *args, **kwargs):
+        # from_user = User.objects.get(id=16)
+        # to_user = User.objects.get(id=15)
+        # send_accepted_friend_request(
+        #     user=from_user,
+        #     other_user=to_user
+        #     # user=received_friend_request.from_user,
+        #     # other_user=received_friend_request.to_user
+        # )
+
+        return Response({'lala': 'alal'}, status=status.HTTP_201_CREATED)  # Created since we're creating a Friend
+
+        # Reject a friend request from the user passed in to the 'username' query parameter
+
+    def delete(self, request, *args, **kwargs):
+        # received_friend_request = self.get_object()
+        # received_friend_request.reject()
+        #
+        # send_rejected_friend_request(
+        #     friend_request=received_friend_request
+        # )
+        #
+        # serializer = self.serializer_class(received_friend_request)
+        return Response({'1': '1'}, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
         my_request = self.get_object(pk)
