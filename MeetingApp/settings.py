@@ -107,6 +107,8 @@ DATABASES = {
 
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
+
+
 # DATABASES['default']['CONN_MAX_AGE'] = 0
 # DATABASES = {
 #     'default': {
@@ -181,5 +183,5 @@ cred = credentials.Certificate(
 )
 firebase_admin.initialize_app(cred)
 django_heroku.settings(locals())
-del DATABASES['default']['OPTIONS']['sslmode']
+# del DATABASES['default']['OPTIONS']['sslmode']
 

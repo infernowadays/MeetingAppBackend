@@ -1,6 +1,7 @@
 from channels.auth import AuthMiddlewareStack
 from channels.db import database_sync_to_async
 from django.contrib.auth.models import AnonymousUser
+from django.db import close_old_connections
 
 from rest_framework.authtoken.models import Token
 
@@ -36,6 +37,7 @@ class TokenAuthMiddlewareInstance:
         headers = dict(self.scope['headers'])
         if b'authorization' in headers:
             self.scope['user'] = await get_user(headers)
+            close_old_connections()
         inner = self.inner(self.scope)
         return await inner(receive, send)
 
