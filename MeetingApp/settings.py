@@ -32,7 +32,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', '8d6b)7hf$v_lo5q1*0=cbm)tqjm_a+0k&akpd
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']
+ALLOWED_HOSTS = ['*']
 
 ASGI_APPLICATION = "MeetingApp.routing.application"
 CHANNEL_LAYERS = {
