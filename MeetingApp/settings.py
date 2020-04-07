@@ -12,8 +12,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
-import firebase_admin
+import dj_database_url
 import django_heroku
+import firebase_admin
 from firebase_admin import credentials
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -104,10 +105,9 @@ DATABASES = {
     }
 }
 
-import dj_database_url
 db_from_env = dj_database_url.config()
 DATABASES['default'].update(db_from_env)
-# DATABASES['default']['CONN_MAX_AGE'] = 500
+# DATABASES['default']['CONN_MAX_AGE'] = 0
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -181,4 +181,5 @@ cred = credentials.Certificate(
 )
 firebase_admin.initialize_app(cred)
 django_heroku.settings(locals())
+del DATABASES['default']['OPTIONS']['sslmode']
 
