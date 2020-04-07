@@ -12,8 +12,13 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
+import environ
 import firebase_admin
 from firebase_admin import credentials
+
+# Set up environ
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,7 +27,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '8d6b)7hf$v_lo5q1*0=cbm)tqjm_a+0k&akpd_09&*k8dt*9_g'
+SECRET_KEY = os.environ.get('SECRET_KEY', '8d6b)7hf$v_lo5q1*0=cbm)tqjm_a+0k&akpd_09&*k8dt*9_g')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -34,7 +39,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
         },
     },
 }
@@ -92,16 +97,21 @@ WSGI_APPLICATION = 'MeetingApp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'meeting_app_backend',
-        'USER': 'postgres',
-        'PASSWORD': '1qaz@WSX',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
-}
+    'default': dj_database_url.config(
+        default=env('DATABASE_URL')
+    )}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'meeting_app_backend',
+#         'USER': 'postgres',
+#         'PASSWORD': '1qaz@WSX',
+#         'HOST': '127.0.0.1',
+#         'PORT': '5432',
+#     }
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators

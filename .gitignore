@@ -41,5 +41,8 @@ coverage.xml
 venv/
 ENV/
 
+# Environ
+.env
+
 # PyCharm
 .idea
