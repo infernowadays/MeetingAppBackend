@@ -12,15 +12,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
-import dj_database_url
-import environ
 import firebase_admin
 import django_heroku
 from firebase_admin import credentials
-
-# Set up environ
-env = environ.Env()
-environ.Env.read_env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,12 +23,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', '8d6b)7hf$v_lo5q1*0=cbm)tqjm_a+0k&akpd_09&*k8dt*9_g')
+# SECRET_KEY = '8d6b)7hf$v_lo5q1*0=cbm)tqjm_a+0k&akpd_09&*k8dt*9_g'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'SOME+RANDOM+BACKUPKEz9+3vnmjb0u@&w68t#5_e8s9-lbfhv-')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']
 
 ASGI_APPLICATION = "MeetingApp.routing.application"
 CHANNEL_LAYERS = {
@@ -42,6 +37,8 @@ CHANNEL_LAYERS = {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
             "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+
+            # "hosts": [('127.0.0.1', 6379)],
         },
     },
 }
@@ -101,10 +98,16 @@ WSGI_APPLICATION = 'MeetingApp.wsgi.application'
 
 
 DATABASES = {
-    'default': dj_database_url.config(
-        engine='django.db.backends.postgresql',
-        default=env('DATABASE_URL')
-    )}
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
+
+import dj_database_url
+db_from_env = dj_database_url.config()
+DATABASES['default'].update(db_from_env)
+# DATABASES['default']['CONN_MAX_AGE'] = 500
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql',
@@ -150,7 +153,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'static_cdn', 'static_root')
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
@@ -177,6 +180,5 @@ cred = credentials.Certificate(
     }
 )
 firebase_admin.initialize_app(cred)
-
-# Activate Heroku
 django_heroku.settings(locals())
+
