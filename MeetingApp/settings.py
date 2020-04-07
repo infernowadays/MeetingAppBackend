@@ -15,6 +15,7 @@ import os
 import dj_database_url
 import environ
 import firebase_admin
+import djano_heroku
 from firebase_admin import credentials
 
 # Set up environ
@@ -149,6 +150,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
 
 REST_FRAMEWORK = {
