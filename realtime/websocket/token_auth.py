@@ -38,6 +38,7 @@ class TokenAuthMiddlewareInstance:
         if b'authorization' in headers:
             close_old_connections()
             self.scope['user'] = await get_user(headers)
+            close_old_connections()
         inner = self.inner(self.scope)
         return await inner(receive, send)
 

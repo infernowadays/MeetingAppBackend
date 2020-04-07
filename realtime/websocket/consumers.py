@@ -33,6 +33,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.user_group_name,
             self.channel_name
         )
+        await self.close()
         # await add_user_as_inactive_websocket(self.user)
 
     # Receive message from WebSocket
