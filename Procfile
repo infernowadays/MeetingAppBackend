@@ -1,2 +1,2 @@
-web: uvicorn MeetingApp.asgi:application --port $PORT --bind 0.0.0.0
+web: uvicorn MeetingApp.asgi:application
 worker: python manage.py runworker realtime-event-sender -v2
