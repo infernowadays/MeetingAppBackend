@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ModelSerializer
 
-from .models import UserProfile
+from .models import UserProfile, ProfilePhoto
 
 
 class UserSerializer(ModelSerializer):
@@ -40,8 +40,15 @@ class TokenSerializer(ModelSerializer):
         fields = ['key']
 
 
+class ProfilePhotoSerializer(ModelSerializer):
+    class Meta:
+        model = ProfilePhoto
+        fields = '__all__'
+
+
 class UserProfileSerializer(ModelSerializer):
     user = UserSerializer()
+    photo = ProfilePhotoSerializer()
 
     class Meta:
         model = UserProfile

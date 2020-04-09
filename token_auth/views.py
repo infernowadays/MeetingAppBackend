@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+import datetime
 from .serializers import *
 
 
@@ -26,8 +26,8 @@ class LoginView(APIView):
 
     def post(self, request):
         try:
-            username = self.request.data['username']
-            password = self.request.data['password']
+            username = request.data['username']
+            password = request.data['password']
         except KeyError:
             raise Http404
 
@@ -37,6 +37,23 @@ class LoginView(APIView):
         token = Token.objects.get(user=user)
 
         return Response({'token': token.key})
+
+
+class UploadPhotoView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, request, pk):
+        serializer = ProfilePhotoSerializer(data=request.data)
+        if serializer.is_valid():
+            photo = serializer.save()
+
+            profile = UserProfile.objects.get(pk=pk)
+            profile.photo = photo
+            profile.save()
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfileView(APIView):

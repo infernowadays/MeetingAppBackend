@@ -42,7 +42,7 @@ venv/
 ENV/
 
 # Environ
-.env
+MeetingApp/.env
 
 # PyCharm
 .idea
