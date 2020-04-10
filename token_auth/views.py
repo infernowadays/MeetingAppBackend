@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+
 from django.http import Http404
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
@@ -8,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import datetime
 from .serializers import *
+from firebase_admin import auth
+import firebase_admin
 
 
 class SignUpView(APIView):
@@ -16,7 +19,16 @@ class SignUpView(APIView):
     def post(self, request):
         serializer = UserProfileSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+
+            firebase_user = auth.create_user(
+                email=request.data.get('email'),
+                password=request.data.get('password')
+            )
+            serializer.save(
+                firebase_uid=firebase_user.uid,
+                firebase_token=firebase_user.tokens_valid_after_timestamp
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -26,12 +38,12 @@ class LoginView(APIView):
 
     def post(self, request):
         try:
-            username = request.data['username']
+            email = request.data['email']
             password = request.data['password']
         except KeyError:
             raise Http404
 
-        user = authenticate(username=username, password=password)
+        user = authenticate(email=email, password=password)
         if not user:
             raise Http404
         token = Token.objects.get(user=user)
@@ -94,3 +106,12 @@ class FirebaseTokenView(APIView):
             raise Http404
 
         return Response({"key": token.key}, status=status.HTTP_200_OK)
+
+
+class FirebaseCreateAccountView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, request, *args, **kwargs):
+        auth.create_user(email="django@mail.ru", password="12345678")
+        return Response({'lala': 'alal'}, status=status.HTTP_201_CREATED)

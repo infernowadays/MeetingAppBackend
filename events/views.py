@@ -11,7 +11,8 @@ from rest_framework.views import APIView
 
 from .serializers import EventSerializer, RequestSerializer
 from .models import *
-
+import firebase_admin
+from firebase_admin import credentials
 from realtime.messaging import send_event_request
 
 

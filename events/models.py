@@ -1,6 +1,6 @@
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.db import models
-
+from token_auth.models import UserProfile
 from .enums import Decision
 
 
@@ -19,16 +19,17 @@ class Event(models.Model):
     date = models.DateField(null=False)
     time = models.TimeField(null=True)
     geoPoint = models.ForeignKey(GeoPoint, null=False, on_delete=models.CASCADE)
-    creator = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE)
+    creator = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now=True)
-    members = models.ManyToManyField(User, related_name='events')
+    members = models.ManyToManyField(UserProfile, related_name='events')
     categories = models.ManyToManyField(Category, related_name='events', blank=True)
 
 
 class Request(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    to_user = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE, related_name='to_user')
-    from_user = models.ForeignKey(User, null=False, db_constraint=True, on_delete=models.CASCADE,
+    to_user = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
+                                related_name='to_user')
+    from_user = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
                                   related_name='from_user')
     created = models.DateTimeField(auto_now=True)
     decision = models.CharField(

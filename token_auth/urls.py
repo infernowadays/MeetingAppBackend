@@ -9,4 +9,6 @@ urlpatterns = [
     path('profile/<int:pk>/', csrf_exempt(views.ProfileView.as_view())),
     path('profile/<int:pk>/upload', csrf_exempt(views.UploadPhotoView.as_view())),
     path('tokens', csrf_exempt(views.FirebaseTokenView.as_view())),
+    path('fb-test', csrf_exempt(views.FirebaseCreateAccountView.as_view())),
+
 ]

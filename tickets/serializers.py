@@ -3,7 +3,7 @@ from rest_framework.fields import CurrentUserDefault
 from rest_framework.serializers import ModelSerializer
 
 from events.models import Event
-from token_auth.serializers import UserSerializer
+# from token_auth.serializers import UserSerializer
 
 
 class TicketSerializer(ModelSerializer):

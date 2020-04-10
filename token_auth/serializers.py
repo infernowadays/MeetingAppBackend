@@ -1,43 +1,17 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ModelSerializer
+from firebase_admin import auth
 
 from .models import UserProfile, ProfilePhoto
 
 
-class UserSerializer(ModelSerializer):
-    id = serializers.ReadOnlyField()
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'password')
-
-    def to_representation(self, obj):
-        user = super(UserSerializer, self).to_representation(obj)
-        user.pop('password')
-        return user
-
-    def create(self, validated_data):
-        user = super().create(validated_data)
-        user.set_password(validated_data['password'])
-        user.save()
-        return user
-
-    def update(self, instance, validated_data):
-        user = super().update(instance, validated_data)
-        try:
-            user.set_password(validated_data['password'])
-            user.save()
-        except KeyError:
-            pass
-        return user
-
-
 class TokenSerializer(ModelSerializer):
+    user = UserProfile
+
     class Meta:
         model = Token
-        fields = ['key']
+        fields = ['key', 'user', ]
 
 
 class ProfilePhotoSerializer(ModelSerializer):
@@ -47,8 +21,8 @@ class ProfilePhotoSerializer(ModelSerializer):
 
 
 class UserProfileSerializer(ModelSerializer):
-    user = UserSerializer()
-    photo = ProfilePhotoSerializer()
+    # user = UserSerializer()
+    photo = ProfilePhotoSerializer(required=False)
 
     class Meta:
         model = UserProfile
@@ -56,18 +30,30 @@ class UserProfileSerializer(ModelSerializer):
 
     def to_representation(self, obj):
         profile = super(UserProfileSerializer, self).to_representation(obj)
+        profile.pop('password')
         profile.pop('firebase_token')
-        profile.pop('vk_token')
+        profile.pop('is_active')
+        profile.pop('is_admin')
+        profile.pop('last_login')
+
+        # profile.pop('vk_token')
 
         return profile
 
     def create(self, validated_data):
-        user_validated = validated_data.pop('user')
-        user = User.objects.create_user(**user_validated)
+        # user_validated = validated_data.pop('user')
+        # user = User.objects.create_user(**user_validated)
+        #
+        # key_validated = validated_data.get('firebase_token')
+        # Token.objects.create(key=key_validated, user_=user)
+
+        profile = UserProfile.objects.create_user(**validated_data)
 
         key_validated = validated_data.get('firebase_token')
-        Token.objects.create(key=key_validated, user=user)
-
-        profile = UserProfile.objects.create(user=user, **validated_data)
+        Token.objects.create(key=key_validated, user=profile)
 
         return profile
+
+
+def create_firebase_account(email, password):
+    auth.create_user(email=email, password=password)

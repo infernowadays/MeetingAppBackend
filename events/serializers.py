@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from token_auth.serializers import UserSerializer
+from token_auth.serializers import UserProfileSerializer
 from .models import Event, Request, Category, GeoPoint
 import datetime
 
@@ -20,7 +20,7 @@ class GeoPointSerializer(ModelSerializer):
 
 class EventSerializer(ModelSerializer):
     id = serializers.ReadOnlyField()
-    creator = UserSerializer(read_only=True)
+    creator = UserProfileSerializer(read_only=True)
     categories = CategorySerializer(read_only=True, many=True)
     geoPoint = GeoPointSerializer()
 
@@ -37,8 +37,8 @@ class EventSerializer(ModelSerializer):
 
 
 class RequestSerializer(ModelSerializer):
-    from_user = UserSerializer(read_only=True)
-    to_user = UserSerializer(read_only=True)
+    from_user = UserProfileSerializer(read_only=True)
+    to_user = UserProfileSerializer(read_only=True)
 
     class Meta:
         model = Request
