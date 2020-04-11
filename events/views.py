@@ -14,6 +14,7 @@ from .models import *
 import firebase_admin
 from firebase_admin import credentials
 from realtime.messaging import send_event_request
+from django.db.models import Q
 
 
 def init_app():
@@ -108,7 +109,15 @@ class EventListView(APIView):
     @staticmethod
     def get(request):
         events = Event.objects.filter(creator=request.user)
-        serializer = EventSerializer(events.order_by('-id'), many=True)
+
+        events_ids = Event.objects.filter(creator=request.user).values_list('id', flat=True)
+        events_to_pass_ids = Request.objects.filter(
+            event__in=events_ids,
+            from_user=request.user
+        ).values_list('event_id', flat=True).distinct()
+
+        serializer = EventSerializer(events.filter(~Q(id__in=events_to_pass_ids)).order_by('-id'), many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -146,13 +155,13 @@ class SendRequestView(APIView):
     def post(self, request):
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
-            to_user = User.objects.get(id=self.request.data['to_user_id'])
+            to_user = UserProfile.objects.get(id=self.request.data['to_user_id'])
 
             serializer.save(from_user=self.request.user, to_user=to_user)
 
-            send_event_request(
-                event_request=Request.objects.get(id=serializer.data['id'])
-            )
+            # send_event_request(
+            #     event_request=Request.objects.get(id=serializer.data['id'])
+            # )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
