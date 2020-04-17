@@ -152,12 +152,19 @@ class SendRequestView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
+    @staticmethod
+    def get_user_by_firebase_uid(firebase_uid):
+        try:
+            return UserProfile.objects.get(firebase_uid=firebase_uid)
+        except UserProfile.DoesNotExist:
+            raise Http404
+
     def post(self, request):
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
-            to_user = UserProfile.objects.get(id=self.request.data['to_user_id'])
-
-            serializer.save(from_user=self.request.user, to_user=to_user)
+            from_user = self.get_user_by_firebase_uid(self.request.data['from_user'])
+            to_user = self.get_user_by_firebase_uid(self.request.data['to_user'])
+            serializer.save(from_user=from_user, to_user=to_user)
 
             # send_event_request(
             #     event_request=Request.objects.get(id=serializer.data['id'])
@@ -165,20 +172,6 @@ class SendRequestView(APIView):
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-            # user=received_friend_request.from_user,
-            # other_user=received_friend_request.to_user
-
-        # send_created_friend_request(
-        #     friend_request=friend_request,
-        # )
-
-        # serializer = RequestSerializer(data=request.data, many=True)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ReceiveRequestView(APIView):

@@ -18,7 +18,7 @@ class Event(models.Model):
     description = models.TextField(null=False, max_length=255)
     date = models.DateField(null=False)
     time = models.TimeField(null=True)
-    geoPoint = models.ForeignKey(GeoPoint, null=False, on_delete=models.CASCADE)
+    geo_point = models.ForeignKey(GeoPoint, null=False, on_delete=models.CASCADE)
     creator = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now=True)
     members = models.ManyToManyField(UserProfile, related_name='events')

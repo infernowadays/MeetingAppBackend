@@ -31,7 +31,7 @@ class UserProfileSerializer(ModelSerializer):
     def to_representation(self, obj):
         profile = super(UserProfileSerializer, self).to_representation(obj)
         profile.pop('password')
-        profile.pop('firebase_token')
+        # profile.pop('firebase_token')
         profile.pop('is_active')
         profile.pop('is_admin')
         profile.pop('last_login')
@@ -49,8 +49,8 @@ class UserProfileSerializer(ModelSerializer):
 
         profile = UserProfile.objects.create_user(**validated_data)
 
-        key_validated = validated_data.get('firebase_token')
-        Token.objects.create(key=key_validated, user=profile)
+        # key_validated = validated_data.get('firebase_token')
+        # Token.objects.create(key=key_validated, user=profile)
 
         return profile
 

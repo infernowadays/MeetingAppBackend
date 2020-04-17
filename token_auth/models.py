@@ -20,7 +20,7 @@ class ProfilePhoto(models.Model):
 
 
 class UserProfileManager(BaseUserManager):
-    def create_user(self, email, username, firebase_uid, firebase_token, password=None):
+    def create_user(self, email, username, firebase_uid, password=None):
         if not email:
             raise ValueError("set email")
         if not username:
@@ -29,8 +29,7 @@ class UserProfileManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             username=username,
-            firebase_uid=firebase_uid,
-            firebase_token=firebase_token
+            firebase_uid=firebase_uid
         )
 
         user.set_password(password)
@@ -42,8 +41,7 @@ class UserProfileManager(BaseUserManager):
             email=self.normalize_email(email),
             username=username,
             firebase_uid=firebase_uid,
-            firebase_token=firebase_token,
-            password=password,
+            password=password
         )
 
         user.is_admin = True
@@ -54,13 +52,13 @@ class UserProfileManager(BaseUserManager):
 class UserProfile(AbstractBaseUser):
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
     username = models.CharField(max_length=60)
-    # user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile", null=False)
+    # user = models.OneToOneField(User, on_delete=modelges.CASCADE, related_name="profile", null=False)
     photo = models.ForeignKey(ProfilePhoto, null=True, on_delete=models.CASCADE)
     date_of_birth = models.DateField(blank=True, null=True)
     sex = models.CharField(max_length=10, choices=Sex.choices(), default=Sex.UNSURE.value)
     # categories = models.ManyToManyField(Category, related_name='profiles', blank=True)
     firebase_uid = models.TextField(blank=True, null=False, max_length=128)
-    firebase_token = models.TextField(blank=True, null=False, max_length=255)
+    # firebase_token = models.TextField(blank=True, null=False, max_length=255)
     # vk_token = models.TextField(null=True, max_length=128)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)

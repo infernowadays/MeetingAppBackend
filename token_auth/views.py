@@ -24,12 +24,15 @@ class SignUpView(APIView):
                 email=request.data.get('email'),
                 password=request.data.get('password')
             )
-            serializer.save(
-                firebase_uid=firebase_user.uid,
-                firebase_token=firebase_user.tokens_valid_after_timestamp
-            )
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.save(firebase_uid=firebase_user.uid)
+            # firebase_token=firebase_user.tokens_valid_after_timestamp
+
+            user = UserProfile.objects.get(email=request.data.get('email'))
+            serializer_data = {'token': Token.objects.create(user=user).key}
+            serializer_data.update(serializer.data)
+
+            return Response(serializer_data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

@@ -22,23 +22,23 @@ class EventSerializer(ModelSerializer):
     id = serializers.ReadOnlyField()
     creator = UserProfileSerializer(read_only=True)
     categories = CategorySerializer(read_only=True, many=True)
-    geoPoint = GeoPointSerializer()
+    geo_point = GeoPointSerializer()
 
     class Meta:
         model = Event
-        fields = ('id', 'creator', 'created', 'description', 'categories', 'geoPoint', 'date', 'time')
+        fields = ('id', 'creator', 'created', 'description', 'categories', 'geo_point', 'date', 'time')
 
     def create(self, validated_data):
-        geo_point_validated = validated_data.pop('geoPoint')
+        geo_point_validated = validated_data.pop('geo_point')
         geo_point = GeoPoint.objects.create(**geo_point_validated)
-        event = Event.objects.create(geoPoint=geo_point, **validated_data)
+        event = Event.objects.create(geo_point=geo_point, **validated_data)
 
         return event
 
 
 class RequestSerializer(ModelSerializer):
-    from_user = UserProfileSerializer(read_only=True)
-    to_user = UserProfileSerializer(read_only=True)
+    # from_user = UserProfileSerializer(read_only=True)
+    # to_user = UserProfileSerializer(read_only=True)
 
     class Meta:
         model = Request
