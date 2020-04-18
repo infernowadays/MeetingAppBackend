@@ -1,4 +1,3 @@
-# from django.contrib.auth.models import User
 from django.db import models
 from token_auth.models import UserProfile
 from .enums import Decision

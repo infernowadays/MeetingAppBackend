@@ -108,15 +108,13 @@ class EventListView(APIView):
 
     @staticmethod
     def get(request):
-        events = Event.objects.filter(creator=request.user)
+        categories = Category.objects.filter(name__in=request.GET.getlist('category')).values_list('id', flat=True)
+        events = Event.objects \
+            .filter(categories__in=categories) \
+            .exclude(creator=request.user) \
+            .order_by('-id')
 
-        events_ids = Event.objects.filter(creator=request.user).values_list('id', flat=True)
-        events_to_pass_ids = Request.objects.filter(
-            event__in=events_ids,
-            from_user=request.user
-        ).values_list('event_id', flat=True).distinct()
-
-        serializer = EventSerializer(events.filter(~Q(id__in=events_to_pass_ids)).order_by('-id'), many=True)
+        serializer = EventSerializer(instance=events, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
