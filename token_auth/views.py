@@ -11,6 +11,8 @@ import datetime
 from .serializers import *
 from firebase_admin import auth
 import firebase_admin
+from events.models import Category
+from events.serializers import CategorySerializer
 
 
 class SignUpView(APIView):
@@ -96,6 +98,16 @@ class ProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class MyProfileView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    @staticmethod
+    def get(request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class FirebaseTokenView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
@@ -109,12 +121,3 @@ class FirebaseTokenView(APIView):
             raise Http404
 
         return Response({"key": token.key}, status=status.HTTP_200_OK)
-
-
-class FirebaseCreateAccountView(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-
-    def post(self, request, *args, **kwargs):
-        auth.create_user(email="django@mail.ru", password="12345678")
-        return Response({'lala': 'alal'}, status=status.HTTP_201_CREATED)

@@ -4,6 +4,7 @@ from rest_framework.serializers import ModelSerializer
 from firebase_admin import auth
 
 from .models import UserProfile, ProfilePhoto
+from common.serializers import CategorySerializer
 
 
 class TokenSerializer(ModelSerializer):
@@ -21,8 +22,8 @@ class ProfilePhotoSerializer(ModelSerializer):
 
 
 class UserProfileSerializer(ModelSerializer):
-    # user = UserSerializer()
     photo = ProfilePhotoSerializer(required=False)
+    categories = CategorySerializer(read_only=True, many=True)
 
     class Meta:
         model = UserProfile
@@ -31,27 +32,14 @@ class UserProfileSerializer(ModelSerializer):
     def to_representation(self, obj):
         profile = super(UserProfileSerializer, self).to_representation(obj)
         profile.pop('password')
-        # profile.pop('firebase_token')
         profile.pop('is_active')
         profile.pop('is_admin')
         profile.pop('last_login')
 
-        # profile.pop('vk_token')
-
         return profile
 
     def create(self, validated_data):
-        # user_validated = validated_data.pop('user')
-        # user = User.objects.create_user(**user_validated)
-        #
-        # key_validated = validated_data.get('firebase_token')
-        # Token.objects.create(key=key_validated, user_=user)
-
         profile = UserProfile.objects.create_user(**validated_data)
-
-        # key_validated = validated_data.get('firebase_token')
-        # Token.objects.create(key=key_validated, user=profile)
-
         return profile
 
 

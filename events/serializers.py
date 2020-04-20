@@ -2,14 +2,9 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from token_auth.serializers import UserProfileSerializer
-from .models import Event, Request, Category, GeoPoint
+from .models import Event, Request, GeoPoint
+from common.serializers import CategorySerializer
 import datetime
-
-
-class CategorySerializer(ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['name']
 
 
 class GeoPointSerializer(ModelSerializer):

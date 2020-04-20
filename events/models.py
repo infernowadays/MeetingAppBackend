@@ -1,16 +1,13 @@
 from django.db import models
 from token_auth.models import UserProfile
 from .enums import Decision
+from common.models import Category
 
 
 class GeoPoint(models.Model):
     address = models.TextField(null=False)
     longitude = models.FloatField(null=False, default=0.0)
     latitude = models.FloatField(null=False, default=0.0)
-
-
-class Category(models.Model):
-    name = models.TextField(null=False, unique=True)
 
 
 class Event(models.Model):

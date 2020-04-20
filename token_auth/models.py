@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
-# from events.models import Category
+from common.models import Category
 from .enums import Sex
 import datetime
 import os
@@ -55,7 +54,7 @@ class UserProfile(AbstractBaseUser):
     photo = models.ForeignKey(ProfilePhoto, null=True, on_delete=models.CASCADE)
     date_of_birth = models.DateField(blank=True, null=True)
     sex = models.CharField(max_length=10, choices=Sex.choices(), default=Sex.UNSURE.value)
-    categories = models.ManyToManyField('events.Category', related_name='profiles', blank=True)
+    categories = models.ManyToManyField(Category, related_name='profiles', blank=True)
     firebase_uid = models.TextField(blank=True, null=False, max_length=128)
     # vk_token = models.TextField(null=True, max_length=128)
     is_active = models.BooleanField(default=True)
@@ -65,6 +64,5 @@ class UserProfile(AbstractBaseUser):
     REQUIRED_FIELDS = ['username', ]
 
     objects = UserProfileManager()
-
 
 # User._meta.get_field('email')._unique = False

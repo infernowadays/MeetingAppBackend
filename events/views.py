@@ -95,9 +95,25 @@ class PushView(APIView):
         # [END send_to_topic]
 
 
+def post(request):
+    serializer = EventSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(creator=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class EventListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
+
+    @staticmethod
+    def apply_filter(events, list_categories):
+        categories = Category.objects.filter(name__in=list_categories).values_list('id', flat=True)
+        events = Event.objects \
+            .filter(categories__in=categories)
+
+        return events
 
     def post(self, request):
         serializer = EventSerializer(data=request.data)
@@ -106,16 +122,15 @@ class EventListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @staticmethod
-    def get(request):
-        categories = Category.objects.filter(name__in=request.GET.getlist('category')).values_list('id', flat=True)
+    def get(self, request):
         events = Event.objects \
-            .filter(categories__in=categories) \
             .exclude(creator=request.user) \
             .order_by('-id')
 
-        serializer = EventSerializer(instance=events, many=True)
+        if len(request.GET) > 0:
+            events = self.apply_filter(events, request.GET.getlist('category'))
 
+        serializer = EventSerializer(instance=events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -160,8 +175,8 @@ class SendRequestView(APIView):
     def post(self, request):
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
-            from_user = self.get_user_by_firebase_uid(self.request.data['from_user'])
-            to_user = self.get_user_by_firebase_uid(self.request.data['to_user'])
+            from_user = self.get_user_by_firebase_uid(request.data['from_user'])
+            to_user = self.get_user_by_firebase_uid(request.data['to_user'])
             serializer.save(from_user=from_user, to_user=to_user)
 
             # send_event_request(
