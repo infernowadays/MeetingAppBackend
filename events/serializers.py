@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, StringRelatedField
 
 from token_auth.serializers import UserProfileSerializer
 from .models import Event, Request, GeoPoint
@@ -32,8 +32,8 @@ class EventSerializer(ModelSerializer):
 
 
 class RequestSerializer(ModelSerializer):
-    # from_user = UserProfileSerializer(read_only=True)
-    # to_user = UserProfileSerializer(read_only=True)
+    from_user = StringRelatedField(read_only=True)
+    to_user = StringRelatedField(read_only=True)
 
     class Meta:
         model = Request

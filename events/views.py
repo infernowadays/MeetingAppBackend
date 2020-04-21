@@ -15,6 +15,7 @@ import firebase_admin
 from firebase_admin import credentials
 from realtime.messaging import send_event_request
 from django.db.models import Q
+from .enums import Decision
 
 
 def init_app():
@@ -108,12 +109,15 @@ class EventListView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     @staticmethod
-    def apply_filter(events, list_categories):
+    def filter_events(list_categories, events):
         categories = Category.objects.filter(name__in=list_categories).values_list('id', flat=True)
-        events = Event.objects \
-            .filter(categories__in=categories)
+        return events.filter(categories__in=categories).distinct()
 
-        return events
+    @staticmethod
+    def pass_requested_events(events):
+        requested_events = Request.objects.filter(event__in=events.values_list('id', flat=True)).values_list('event',
+                                                                                                             flat=True)
+        return events.filter(~Q(id__in=requested_events))
 
     def post(self, request):
         serializer = EventSerializer(data=request.data)
@@ -127,8 +131,10 @@ class EventListView(APIView):
             .exclude(creator=request.user) \
             .order_by('-id')
 
+        events = self.pass_requested_events(events)
+
         if len(request.GET) > 0:
-            events = self.apply_filter(events, request.GET.getlist('category'))
+            events = self.filter_events(request.GET.getlist('category'), events)
 
         serializer = EventSerializer(instance=events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -166,6 +172,12 @@ class SendRequestView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     @staticmethod
+    def send_websocket(pk):
+        send_event_request(
+            event_request=Request.objects.get(pk=pk)
+        )
+
+    @staticmethod
     def get_user_by_firebase_uid(firebase_uid):
         try:
             return UserProfile.objects.get(firebase_uid=firebase_uid)
@@ -178,10 +190,6 @@ class SendRequestView(APIView):
             from_user = self.get_user_by_firebase_uid(request.data['from_user'])
             to_user = self.get_user_by_firebase_uid(request.data['to_user'])
             serializer.save(from_user=from_user, to_user=to_user)
-
-            # send_event_request(
-            #     event_request=Request.objects.get(id=serializer.data['id'])
-            # )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -198,37 +206,19 @@ class ReceiveRequestView(APIView):
         except Request.DoesNotExist:
             raise Http404
 
-        # Accept a friend request from the user passed in to the 'username' query parameter
-
-    def post(self, request, *args, **kwargs):
-        # from_user = User.objects.get(id=16)
-        # to_user = User.objects.get(id=15)
-        # send_accepted_friend_request(
-        #     user=from_user,
-        #     other_user=to_user
-        #     # user=received_friend_request.from_user,
-        #     # other_user=received_friend_request.to_user
-        # )
-
-        return Response({'lala': 'alal'}, status=status.HTTP_201_CREATED)  # Created since we're creating a Friend
-
-        # Reject a friend request from the user passed in to the 'username' query parameter
-
-    def delete(self, request, *args, **kwargs):
-        # received_friend_request = self.get_object()
-        # received_friend_request.reject()
-        #
-        # send_rejected_friend_request(
-        #     friend_request=received_friend_request
-        # )
-        #
-        # serializer = self.serializer_class(received_friend_request)
-        return Response({'1': '1'}, status=status.HTTP_200_OK)
-
     def put(self, request, pk):
-        my_request = self.get_object(pk)
-        serializer = RequestSerializer(my_request, data=request.data, partial=True)
+        event_request = self.get_object(pk)
+        serializer = RequestSerializer(event_request, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
+
+            if serializer.data.get('decision') == Decision.ACCEPT:
+                event = Event.objects.get(id=serializer.data.get('event'))
+                user = UserProfile.objects.get(email=serializer.data.get('from_user'))
+
+                event.members.add(user)
+            elif serializer.data.get('decision') == Decision.DECLINE:
+                event_request.delete()
+
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
