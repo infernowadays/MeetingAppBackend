@@ -108,16 +108,34 @@ class EventListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
-    @staticmethod
-    def filter_events(list_categories, events):
-        categories = Category.objects.filter(name__in=list_categories).values_list('id', flat=True)
-        return events.filter(categories__in=categories).distinct()
+    def not_requested_events(self):
+        events_ids = Event.objects.all().values_list('id', flat=True)
+        requested_events = Request.objects.filter(event__in=events_ids, from_user=self.request.user).values_list(
+            'event', flat=True)
+
+        return ~Q(id__in=requested_events)
+
+    def filter_events_by_user_roles(self, list_roles):
+        q = Q()
+        if list_roles:
+            for role in list_roles:
+                if role == 'creator':
+                    q = q | Q(creator=self.request.user)
+                elif role == 'member':
+                    q = q | Q(members=self.request.user)
+
+        else:
+            q = Q(~Q(creator=self.request.user) & ~Q(members=self.request.user) & self.not_requested_events())
+
+        return q
 
     @staticmethod
-    def pass_requested_events(events):
-        requested_events = Request.objects.filter(event__in=events.values_list('id', flat=True)).values_list('event',
-                                                                                                             flat=True)
-        return events.filter(~Q(id__in=requested_events))
+    def filter_events_by_categories(list_categories):
+        if list_categories:
+            categories = Category.objects.filter(name__in=list_categories).values_list('id', flat=True)
+            return Q(categories__in=categories)
+        else:
+            return Q()
 
     def post(self, request):
         serializer = EventSerializer(data=request.data)
@@ -127,16 +145,12 @@ class EventListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        events = Event.objects \
-            .exclude(creator=request.user) \
-            .order_by('-id')
+        q = Q() | self.filter_events_by_user_roles(request.GET.getlist('me'))
+        q = q & self.filter_events_by_categories(request.GET.getlist('category'))
 
-        events = self.pass_requested_events(events)
-
-        if len(request.GET) > 0:
-            events = self.filter_events(request.GET.getlist('category'), events)
-
+        events = Event.objects.filter(q).distinct().order_by('-id')
         serializer = EventSerializer(instance=events, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
