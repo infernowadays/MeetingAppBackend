@@ -17,6 +17,9 @@ class ProfilePhoto(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     photo = models.FileField(upload_to=get_path_for_profile_photo)
 
+    class Meta:
+        db_table = 'profile_photo'
+
 
 class UserProfileManager(BaseUserManager):
     def create_user(self, email, username, firebase_uid, password=None):
@@ -56,6 +59,7 @@ class UserProfile(AbstractBaseUser):
     sex = models.CharField(max_length=10, choices=Sex.choices(), default=Sex.UNSURE.value)
     categories = models.ManyToManyField(Category, related_name='profiles', blank=True)
     firebase_uid = models.TextField(blank=True, null=False, max_length=128)
+    firebase_registration_token = models.TextField(blank=True, max_length=256)
     # vk_token = models.TextField(null=True, max_length=128)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -65,4 +69,5 @@ class UserProfile(AbstractBaseUser):
 
     objects = UserProfileManager()
 
-# User._meta.get_field('email')._unique = False
+    class Meta:
+        db_table = 'user_profile'

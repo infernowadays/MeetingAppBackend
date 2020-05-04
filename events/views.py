@@ -53,8 +53,8 @@ class PushView(APIView):
             "https": "http://127.0.0.1",
         }
         push_service = FCMNotification(api_key=api_key, proxy_dict=proxy_dict)
-        token = 'cBX5zV8BZdo:APA91bGCBWhvD-hHd3Nof6QRpwxqCr-FQKREkzUREEvmbb2rwJAScxeEY03ZXRNc8qjP-kubijTPKSYiuX2BnKC7brCNn1amrrQIH0PEgQd14AIgqTlpcla4RIhXxbE6J8lzDrYddkj8'
 
+        token = 'dpPIhH3nSAetWHpC0FLKpr:APA91bHt-ehIK9_Ub0O6ELZb6mqIUBZf4fea34krURsjpkAtEFGxL4rjayq1-GfajiAakBQN0xbVezchyeQDNJjSI36uC5K5_XFesYQ8hMSvN5Q6GvIInADmh3UwZIoZPDWTX-vcBhWN'
         registration_id = token
         message_title = "Uber update"
         message_body = "Hi john, your customized news for today is ready"
@@ -96,12 +96,12 @@ class PushView(APIView):
         # [END send_to_topic]
 
 
-def post(request):
-    serializer = EventSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save(creator=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# def post(request):
+#     serializer = EventSerializer(data=request.data)
+#     if serializer.is_valid():
+#         serializer.save(creator=request.user)
+#         return Response(serializer.data, status=status.HTTP_201_CREATED)
+#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class EventListView(APIView):
@@ -204,6 +204,8 @@ class SendRequestView(APIView):
             from_user = self.get_user_by_firebase_uid(request.data['from_user'])
             to_user = self.get_user_by_firebase_uid(request.data['to_user'])
             serializer.save(from_user=from_user, to_user=to_user)
+
+            self.send_websocket(serializer.data.get('id'))
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

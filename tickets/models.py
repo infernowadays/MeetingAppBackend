@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
 from token_auth.models import UserProfile
+from common.models import Category
 
 
 class Ticket(models.Model):
@@ -11,3 +12,7 @@ class Ticket(models.Model):
     date = models.DateTimeField(null=True)
     description = models.TextField(null=True)
     sold = models.BooleanField(default=False)
+    categories = models.ManyToManyField(Category, related_name='tickets', blank=True)
+
+    class Meta:
+        db_table = 'ticket'

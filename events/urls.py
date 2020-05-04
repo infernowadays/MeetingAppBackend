@@ -10,4 +10,7 @@ urlpatterns = [
 
     path('requests', csrf_exempt(SendRequestView.as_view())),
     path('requests/<int:pk>', csrf_exempt(ReceiveRequestView.as_view())),
+
+    path('push', csrf_exempt(PushView.as_view())),
+
 ]

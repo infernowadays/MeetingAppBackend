@@ -3,6 +3,7 @@ from rest_framework.serializers import ModelSerializer, StringRelatedField
 
 from token_auth.serializers import UserProfileSerializer
 from .models import Event, Request, GeoPoint
+from chat.models import Chat
 from common.serializers import CategorySerializer
 import datetime
 
@@ -27,9 +28,26 @@ class EventSerializer(ModelSerializer):
     def create(self, validated_data):
         geo_point_validated = validated_data.pop('geo_point')
         geo_point = GeoPoint.objects.create(**geo_point_validated)
-        event = Event.objects.create(geo_point=geo_point, **validated_data)
+
+        chat = Chat.objects.create()
+
+        event = Event.objects.create(geo_point=geo_point, chat=chat, **validated_data)
 
         return event
+
+    def update(self, instance, validated_data):
+        instance.description = validated_data.pop('description')
+        instance.date = validated_data.pop('date')
+        instance.time = validated_data.get('time', instance.time)
+        instance.save()
+
+        geo_point = instance.geo_point
+        geo_point.latitude = validated_data.get('geo_point').get('latitude')
+        geo_point.longitude = validated_data.get('geo_point').get('longitude')
+        geo_point.address = validated_data.get('geo_point').get('address')
+        geo_point.save()
+
+        return instance
 
 
 class RequestSerializer(ModelSerializer):

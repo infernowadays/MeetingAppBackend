@@ -43,5 +43,5 @@ class TokenAuthMiddlewareInstance:
         return await inner(receive, send)
 
 
-def TokenAuthMiddlewareStack(inner):
+def token_auth_middleware_stack(inner):
     return TokenAuthMiddleware(AuthMiddlewareStack(inner))

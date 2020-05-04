@@ -46,3 +46,6 @@ MeetingApp/.env
 
 # PyCharm
 .idea
+
+# Firebase Key
+serviceAccountKey.json

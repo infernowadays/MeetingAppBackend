@@ -2,12 +2,16 @@ from django.db import models
 from token_auth.models import UserProfile
 from .enums import Decision
 from common.models import Category
+from chat.models import Chat
 
 
 class GeoPoint(models.Model):
     address = models.TextField(null=False)
     longitude = models.FloatField(null=False, default=0.0)
     latitude = models.FloatField(null=False, default=0.0)
+
+    class Meta:
+        db_table = 'geo_point'
 
 
 class Event(models.Model):
@@ -20,14 +24,18 @@ class Event(models.Model):
     created = models.DateTimeField(auto_now=True)
     members = models.ManyToManyField(UserProfile, related_name='events')
     categories = models.ManyToManyField(Category, related_name='events', blank=True)
+    chat = models.ForeignKey(Chat, null=False, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'event'
 
 
 class Request(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     to_user = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
-                                related_name='to_user')
+                                related_name='to_user_requests')
     from_user = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
-                                  related_name='from_user')
+                                  related_name='from_user_requests')
     created = models.DateTimeField(auto_now=True)
     seen = models.BooleanField(default=False)
     decision = models.CharField(
@@ -35,3 +43,6 @@ class Request(models.Model):
         choices=Decision.choices(),
         default=Decision.DECLINE.value
     )
+
+    class Meta:
+        db_table = 'request'
