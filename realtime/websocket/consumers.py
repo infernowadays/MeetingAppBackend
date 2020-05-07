@@ -7,14 +7,14 @@ from .utils import construct_group_name_from_uid
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        # Get the user object (provided by the TokenAuthMiddleware in mysite/routing.py)
+        # Get the user object (provided by the TokenAuthMiddleware in MeetingApp/routing.py)
         self.user = self.scope["user"]
 
         if self.user.is_anonymous:
             await self.close()
 
         self.user_group_name = construct_group_name_from_uid(self.user.id)
-        print(self.user_group_name)
+        # print(self.user_group_name)
 
         await self.channel_layer.group_add(
             self.user_group_name,
@@ -33,13 +33,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from WebSocket
     async def receive(self, text_data=None, bytes_data=None):
         data_serialized = json.loads(text_data)
-        print(data_serialized)
+        # print(data_serialized)
 
-    async def send_message(self, data_serialized):
-        pass
-
-    async def created_event_request(self, message):
-        print("event request")
+    async def send_consumer_event_to_client(self, message):
         await self._send_consumer_event_to_client(
             event=message
         )

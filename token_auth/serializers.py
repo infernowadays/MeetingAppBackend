@@ -41,7 +41,3 @@ class UserProfileSerializer(ModelSerializer):
     def create(self, validated_data):
         profile = UserProfile.objects.create_user(**validated_data)
         return profile
-
-
-def create_firebase_account(email, password):
-    auth.create_user(email=email, password=password)

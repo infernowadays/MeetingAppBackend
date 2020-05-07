@@ -1,7 +1,9 @@
 import firebase_admin
+from django.db.models import Q
 from django.http import Http404
 from django.http import JsonResponse
-from firebase_admin import messaging, credentials
+from firebase_admin import credentials
+from firebase_admin import messaging
 from pyfcm import FCMNotification
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
@@ -9,13 +11,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import EventSerializer, RequestSerializer
-from .models import *
-import firebase_admin
-from firebase_admin import credentials
 from realtime.messaging import send_event_request
-from django.db.models import Q
 from .enums import Decision
+from .models import *
+from .serializers import EventSerializer, RequestSerializer
 
 
 def init_app():
@@ -181,7 +180,7 @@ class EventDetailView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class SendRequestView(APIView):
+class RequestsListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
@@ -203,15 +202,22 @@ class SendRequestView(APIView):
         if serializer.is_valid():
             from_user = self.get_user_by_firebase_uid(request.data['from_user'])
             to_user = self.get_user_by_firebase_uid(request.data['to_user'])
-            serializer.save(from_user=from_user, to_user=to_user)
+
+            event = Event.objects.get(id=request.data['event'])
+            serializer.save(from_user=from_user, to_user=to_user, event=event)
 
             self.send_websocket(serializer.data.get('id'))
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def get(self, request):
+        requests = Request.objects.filter(to_user=request.user)
+        serializer = RequestSerializer(instance=requests, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-class ReceiveRequestView(APIView):
+
+class RespondRequestView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
@@ -231,10 +237,11 @@ class ReceiveRequestView(APIView):
             if serializer.data.get('decision') == Decision.ACCEPT:
                 event = Event.objects.get(id=serializer.data.get('event'))
                 user = UserProfile.objects.get(email=serializer.data.get('from_user'))
-
                 event.members.add(user)
             elif serializer.data.get('decision') == Decision.DECLINE:
                 event_request.delete()
+
+            self.send_websocket(serializer.data.get('id'))
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,9 +1,9 @@
 from django.urls import path
+from django.views.decorators.csrf import csrf_exempt
 
-from . import views
+from .views import *
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('<str:room_name>/', views.room, name='room'),
+    path('chats/<int:pk>', csrf_exempt(ChatView.as_view())),
+    path('messages', csrf_exempt(MessageView.as_view())),
 ]
-

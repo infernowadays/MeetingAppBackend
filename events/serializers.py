@@ -53,6 +53,7 @@ class EventSerializer(ModelSerializer):
 class RequestSerializer(ModelSerializer):
     from_user = StringRelatedField(read_only=True)
     to_user = StringRelatedField(read_only=True)
+    event = serializers.IntegerField(source='event.id', read_only=True)
 
     class Meta:
         model = Request
