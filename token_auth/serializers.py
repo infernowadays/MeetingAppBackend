@@ -22,7 +22,7 @@ class ProfilePhotoSerializer(ModelSerializer):
 
 
 class UserProfileSerializer(ModelSerializer):
-    photo = ProfilePhotoSerializer(required=False)
+    photo = ProfilePhotoSerializer(read_only=True)
     categories = CategorySerializer(read_only=True, many=True)
 
     class Meta:

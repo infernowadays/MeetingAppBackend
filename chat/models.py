@@ -1,12 +1,7 @@
 from django.db import models
+
 from token_auth.models import UserProfile
-
-
-class Chat(models.Model):
-    members = models.ManyToManyField(UserProfile, related_name='chats')
-
-    class Meta:
-        db_table = 'chat'
+from events.models import Event
 
 
 class Message(models.Model):
@@ -15,7 +10,20 @@ class Message(models.Model):
     text = models.TextField(null=False, max_length=512)
     created = models.DateTimeField(auto_now=True)
     seen = models.BooleanField(default=False)
-    chat = models.ForeignKey(Chat, null=False, db_constraint=True, on_delete=models.CASCADE, related_name='messages')
+    event = models.ForeignKey(Event, null=False, db_constraint=True, on_delete=models.CASCADE, related_name='messages')
 
     class Meta:
         db_table = 'message'
+
+
+class PrivateMessage(models.Model):
+    from_user = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
+                                  related_name='private_from_user_messages')
+    user = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
+                             related_name='private_user_messages')
+    text = models.TextField(null=False, max_length=512)
+    created = models.DateTimeField(auto_now=True)
+    seen = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'private_message'

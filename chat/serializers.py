@@ -1,17 +1,29 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, StringRelatedField
-from .models import Chat, Message
-
-
-class ChatSerializer(ModelSerializer):
-    class Meta:
-        model = Chat
-        fields = '__all__'
+from .models import Message, PrivateMessage
+from token_auth.serializers import UserProfileSerializer
+from events.serializers import EventSerializer
 
 
 class MessageSerializer(ModelSerializer):
-    chat = ChatSerializer(read_only=True, many=True)
+    from_user = UserProfileSerializer(read_only=True)
+    chat = EventSerializer(read_only=True)
 
     class Meta:
         model = Message
+        fields = '__all__'
+
+    def to_representation(self, obj):
+        message = super(MessageSerializer, self).to_representation(obj)
+        message.pop('event')
+
+        return message
+
+
+class PrivateMessageSerializer(ModelSerializer):
+    from_user = UserProfileSerializer(read_only=True)
+    user = UserProfileSerializer(read_only=True)
+
+    class Meta:
+        model = PrivateMessage
         fields = '__all__'

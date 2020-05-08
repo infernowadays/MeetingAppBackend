@@ -3,7 +3,7 @@ WEBSOCKET_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 class RequestEvent:
     def __init__(self, event, from_user, to_user, decision, created):
-        self._type = "send_consumer_event_to_client"
+        self._type = "request_event"
         self._event = event
         self._from_user = from_user
         self._to_user = to_user
@@ -47,12 +47,12 @@ class RequestEvent:
 
 
 class MessageEvent:
-    def __init__(self, from_user, text, created, chat):
-        self._type = "send_consumer_event_to_client"
+    def __init__(self, from_user, text, created, event):
+        self._type = "message_event"
         self._from_user = from_user
         self._text = text
         self._created = created
-        self._chat = chat
+        self._event = event
 
     @property
     def type(self):
@@ -60,7 +60,7 @@ class MessageEvent:
 
     @property
     def from_user(self):
-        return str(self._from_user)
+        return self._from_user
 
     @property
     def text(self):
@@ -71,8 +71,8 @@ class MessageEvent:
         return self._created.strftime(WEBSOCKET_DATE_TIME_FORMAT)
 
     @property
-    def chat(self):
-        return str(self._chat)
+    def event(self):
+        return str(self._event)
 
     @property
     def properties_dict(self):
@@ -81,5 +81,44 @@ class MessageEvent:
             from_user=self.from_user,
             text=self.text,
             created=self.created,
-            chat=self.chat,
+            event=self.event,
+        )
+
+
+class PrivateMessageEvent:
+    def __init__(self, from_user, user, text, created):
+        self._type = "send_consumer_event_to_client"
+        self._from_user = from_user
+        self._user = user
+        self._text = text
+        self._created = created
+
+    @property
+    def type(self):
+        return self._type
+
+    @property
+    def from_user(self):
+        return str(self._from_user)
+
+    @property
+    def user(self):
+        return str(self._user)
+
+    @property
+    def text(self):
+        return self._text
+
+    @property
+    def created(self):
+        return self._created.strftime(WEBSOCKET_DATE_TIME_FORMAT)
+
+    @property
+    def properties_dict(self):
+        return dict(
+            type=self.type,
+            from_user=self.from_user,
+            user=self.user,
+            text=self.text,
+            created=self.created,
         )

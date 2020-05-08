@@ -14,7 +14,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
             await self.close()
 
         self.user_group_name = construct_group_name_from_uid(self.user.id)
-        # print(self.user_group_name)
 
         await self.channel_layer.group_add(
             self.user_group_name,
@@ -35,7 +34,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         data_serialized = json.loads(text_data)
         # print(data_serialized)
 
-    async def send_consumer_event_to_client(self, message):
+    async def request_event(self, message):
+        await self._send_consumer_event_to_client(
+            event=message
+        )
+
+    async def message_event(self, message):
         await self._send_consumer_event_to_client(
             event=message
         )

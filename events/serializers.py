@@ -1,11 +1,9 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, StringRelatedField
 
+from common.serializers import CategorySerializer
 from token_auth.serializers import UserProfileSerializer
 from .models import Event, Request, GeoPoint
-from chat.models import Chat
-from common.serializers import CategorySerializer
-import datetime
 
 
 class GeoPointSerializer(ModelSerializer):

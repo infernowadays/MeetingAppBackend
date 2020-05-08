@@ -9,8 +9,6 @@ from .websocket.messaging import send_event_via_websocket_group_consumer
 class EventSenderConsumer(AsyncConsumer):
 
     async def send_event(self, message):
-        # user = await database_sync_to_async(UserProfile.objects.get)(id=(message['user_id_str']))
-
         await send_event_via_websocket_group_consumer(
             channel_layer=self.channel_layer,
             to_user_ids=message['to_user_ids'],

@@ -2,7 +2,6 @@ from django.db import models
 from token_auth.models import UserProfile
 from .enums import Decision
 from common.models import Category
-from chat.models import Chat
 
 
 class GeoPoint(models.Model):
@@ -24,7 +23,6 @@ class Event(models.Model):
     created = models.DateTimeField(auto_now=True)
     members = models.ManyToManyField(UserProfile, related_name='events')
     categories = models.ManyToManyField(Category, related_name='events', blank=True)
-    chat = models.ForeignKey(Chat, null=False, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'event'
