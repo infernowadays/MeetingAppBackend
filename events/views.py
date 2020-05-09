@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from realtime.messaging import send_event_request
+from realtime.messaging import send_event_request, send_event_response_request
 from .enums import Decision
 from .models import *
 from .serializers import EventSerializer, RequestSerializer
@@ -191,17 +191,17 @@ class RequestsListView(APIView):
         )
 
     @staticmethod
-    def get_user_by_firebase_uid(firebase_uid):
+    def get_object(pk):
         try:
-            return UserProfile.objects.get(firebase_uid=firebase_uid)
+            return UserProfile.objects.get(pk=pk)
         except UserProfile.DoesNotExist:
             raise Http404
 
     def post(self, request):
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
-            from_user = self.get_user_by_firebase_uid(request.data['from_user'])
-            to_user = self.get_user_by_firebase_uid(request.data['to_user'])
+            from_user = self.get_object(request.data['from_user'])
+            to_user = self.get_object(request.data['to_user'])
 
             event = Event.objects.get(id=request.data['event'])
             serializer.save(from_user=from_user, to_user=to_user, event=event)
@@ -212,7 +212,7 @@ class RequestsListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        requests = Request.objects.filter(to_user=request.user)
+        requests = Request.objects.filter(to_user=request.user).order_by('-created')
         serializer = RequestSerializer(instance=requests, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -220,6 +220,12 @@ class RequestsListView(APIView):
 class RespondRequestView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
+
+    @staticmethod
+    def send_websocket(pk):
+        send_event_response_request(
+            event_request=Request.objects.get(pk=pk)
+        )
 
     @staticmethod
     def get_object(pk):
@@ -241,7 +247,7 @@ class RespondRequestView(APIView):
             elif serializer.data.get('decision') == Decision.DECLINE:
                 event_request.delete()
 
-            self.send_websocket(serializer.data.get('id'))
+            # self.send_websocket(serializer.data.get('id'))
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

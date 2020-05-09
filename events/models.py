@@ -37,9 +37,9 @@ class Request(models.Model):
     created = models.DateTimeField(auto_now=True)
     seen = models.BooleanField(default=False)
     decision = models.CharField(
-        max_length=10,
+        max_length=16,
         choices=Decision.choices(),
-        default=Decision.DECLINE.value
+        default=Decision.NO_ANSWER.value
     )
 
     class Meta:

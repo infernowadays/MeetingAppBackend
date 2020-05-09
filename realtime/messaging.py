@@ -11,9 +11,24 @@ def send_event_request(event_request):
     _send_realtime_event_to_user(
         to_user_ids=[event_request.to_user.id],
         realtime_event=RequestEvent(
+            id=event_request.id,
             event=event_request.event.id,
             from_user=event_request.from_user.id,
             to_user=event_request.to_user.id,
+            decision=event_request.decision,
+            created=event_request.created,
+        )
+    )
+
+
+def send_event_response_request(event_request):
+    _send_realtime_event_to_user(
+        to_user_ids=[event_request.to_user.id],
+        realtime_event=RequestEvent(
+            id=event_request.id,
+            event=event_request.event.id,
+            from_user=event_request.to_user.id,
+            to_user=event_request.from_user.id,
             decision=event_request.decision,
             created=event_request.created,
         )

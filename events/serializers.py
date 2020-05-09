@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, StringRelatedField
+from rest_framework.serializers import ModelSerializer, StringRelatedField, IntegerField
 
 from common.serializers import CategorySerializer
 from token_auth.serializers import UserProfileSerializer
@@ -27,9 +27,7 @@ class EventSerializer(ModelSerializer):
         geo_point_validated = validated_data.pop('geo_point')
         geo_point = GeoPoint.objects.create(**geo_point_validated)
 
-        chat = Chat.objects.create()
-
-        event = Event.objects.create(geo_point=geo_point, chat=chat, **validated_data)
+        event = Event.objects.create(geo_point=geo_point, **validated_data)
 
         return event
 
@@ -49,8 +47,10 @@ class EventSerializer(ModelSerializer):
 
 
 class RequestSerializer(ModelSerializer):
-    from_user = StringRelatedField(read_only=True)
-    to_user = StringRelatedField(read_only=True)
+    # from_user = StringRelatedField(read_only=True)
+    # to_user = StringRelatedField(read_only=True)
+    from_user = serializers.IntegerField(source='from_user.id', read_only=True)
+    to_user = serializers.IntegerField(source='to_user.id', read_only=True)
     event = serializers.IntegerField(source='event.id', read_only=True)
 
     class Meta:

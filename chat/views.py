@@ -11,6 +11,16 @@ from .models import *
 from .serializers import *
 
 
+class ChatsView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def get(self, request):
+        events = request.user.events.all()
+        serializer = EventSerializer(instance=events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class MessageView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
