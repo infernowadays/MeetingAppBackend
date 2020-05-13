@@ -4,13 +4,11 @@ stages:
   - deploy
 
 build:
-  image: tiangolo/docker-with-compose
   stage: build
   script:
     - docker-compose build
 
 deploy:
-  image: tiangolo/docker-with-compose
   stage: deploy
   script:
     - docker-compose up
