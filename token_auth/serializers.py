@@ -35,6 +35,7 @@ class UserProfileSerializer(ModelSerializer):
         profile.pop('is_active')
         profile.pop('is_admin')
         profile.pop('last_login')
+        profile.pop('vk_token')
 
         return profile
 

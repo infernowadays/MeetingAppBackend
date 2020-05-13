@@ -22,7 +22,7 @@ class ProfilePhoto(models.Model):
 
 
 class UserProfileManager(BaseUserManager):
-    def create_user(self, email, username, firebase_uid, password=None):
+    def create_user(self, email, username, password=None):
         if not email:
             raise ValueError("set email")
         if not username:
@@ -30,8 +30,7 @@ class UserProfileManager(BaseUserManager):
 
         user = self.model(
             email=self.normalize_email(email),
-            username=username,
-            firebase_uid=firebase_uid
+            username=username
         )
 
         user.set_password(password)
@@ -42,7 +41,6 @@ class UserProfileManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             username=username,
-            firebase_uid=firebase_uid,
             password=password
         )
 
@@ -53,14 +51,18 @@ class UserProfileManager(BaseUserManager):
 
 class UserProfile(AbstractBaseUser):
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
-    username = models.CharField(max_length=60)
+    username = models.CharField(max_length=64, null=False)
+    first_name = models.CharField(max_length=64, blank=True)
+    last_name = models.CharField(max_length=64, blank=True)
+    city = models.CharField(max_length=64, null=True)
+    education = models.CharField(max_length=64, null=True)
+    job = models.CharField(max_length=64, null=True)
     photo = models.ForeignKey(ProfilePhoto, null=True, on_delete=models.CASCADE)
-    date_of_birth = models.DateField(blank=True, null=True)
-    sex = models.CharField(max_length=10, choices=Sex.choices(), default=Sex.UNSURE.value)
+    date_of_birth = models.DateField(null=True, blank=True)
+    sex = models.CharField(max_length=16, choices=Sex.choices(), default=Sex.UNSURE.value)
     categories = models.ManyToManyField(Category, related_name='profiles', blank=True)
-    firebase_uid = models.TextField(blank=True, null=False, max_length=128)
-    firebase_registration_token = models.TextField(blank=True, max_length=256)
-    # vk_token = models.TextField(null=True, max_length=128)
+    firebase_uid = models.TextField(blank=True, max_length=128)
+    vk_token = models.TextField(null=True, max_length=128)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
