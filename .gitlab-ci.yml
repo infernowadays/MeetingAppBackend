@@ -18,4 +18,5 @@ remove:
   stage: remove
   script:
     - docker-compose down
+  when: manual
 
