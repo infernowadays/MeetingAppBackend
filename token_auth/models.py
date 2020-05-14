@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from common.models import Category
 from .enums import Sex
 import datetime
@@ -40,16 +40,19 @@ class UserProfileManager(BaseUserManager):
     def create_superuser(self, email, username, password=None):
         user = self.model(
             email=self.normalize_email(email),
-            username=username,
-            password=password
+            username=username
         )
 
+        user.set_password(password)
+
         user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
 
 
-class UserProfile(AbstractBaseUser):
+class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
     username = models.CharField(max_length=64, null=False)
     first_name = models.CharField(max_length=64, blank=True)
@@ -65,6 +68,8 @@ class UserProfile(AbstractBaseUser):
     vk_token = models.TextField(null=True, max_length=128)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', ]
