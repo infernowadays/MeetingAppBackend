@@ -10,8 +10,7 @@ class Category(models.Model):
 
 class SubCategory(models.Model):
     name = models.TextField(null=False, unique=True)
-    parent_category = models.ForeignKey(Category, null=False, blank=True, on_delete=models.CASCADE,
-                                        related_name='sub_categories')
+    parent_category = models.ForeignKey(Category, null=False, on_delete=models.CASCADE, related_name='sub_categories')
 
     class Meta:
         db_table = 'sub_category'
