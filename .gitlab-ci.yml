@@ -8,7 +8,7 @@ stages:
 build:
   stage: build
   script:
-    # TODO: make serviceAccountKey.json
+    - make_service_account_key_json
     - docker-compose build
 
 test:
@@ -27,3 +27,13 @@ remove:
   script:
     - docker-compose down
 
+.auto_devops: &auto_devops |
+  TRACE=1
+  [[ "$TRACE" ]] && set -x
+
+  function make_service_account_key_json() {
+    echo 'hi'
+  }
+
+before_script:
+  - *auto_devops
