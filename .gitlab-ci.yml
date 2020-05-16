@@ -1,13 +1,20 @@
 
 stages:
   - build
+  - test
   - deploy
   - remove
 
 build:
   stage: build
   script:
+    # TODO: make serviceAccountKey.json
     - docker-compose build
+
+test:
+  stage: test
+  script:
+    - docker-compose run python manage.py test -v=2
 
 deploy:
   stage: deploy
@@ -16,7 +23,7 @@ deploy:
 
 remove:
   stage: remove
+  when: manual
   script:
     - docker-compose down
-  when: manual
 
