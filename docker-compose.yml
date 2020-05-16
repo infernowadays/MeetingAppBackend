@@ -5,9 +5,27 @@ services:
   app:
     build:
       context: .
+    depends_on:
+      - pg
+      - redis
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - PG_HOST=pg
+      - PG_PORT=5432
+      - PG_PASSWORD=password
+      - PG_USER=user
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
   pg:
     image: mdillon/postgis:9.5-alpine
+    environment:
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=user
+      - POSTGRES_DB=meeting_app_backend
 
   redis:
     image: redis:3.0.6-alpine
