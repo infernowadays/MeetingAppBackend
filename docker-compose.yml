@@ -29,3 +29,6 @@ services:
 
   redis:
     image: redis:3.0.6-alpine
+
+  # TODO: add nginx
+
