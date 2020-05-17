@@ -2,7 +2,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from common.models import Category
+from common.utils import *
 from .models import Ticket
 from .serializers import TicketSerializer
 
@@ -10,40 +10,23 @@ from .serializers import TicketSerializer
 class TicketListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
-
-    def filter_events_by_user_roles(self, list_roles):
-        q = Q()
-        if list_roles:
-            for role in list_roles:
-                if role == 'creator':
-                    q = q | Q(creator=self.request.user)
-
-        else:
-            q = ~Q(creator=self.request.user)
-
-        return q
-
-    @staticmethod
-    def filter_events_by_categories(list_categories):
-        if list_categories:
-            categories = Category.objects.filter(name__in=list_categories).values_list('id', flat=True)
-            return Q(categories__in=categories)
-        else:
-            return Q()
+    serializer_class = TicketSerializer
+    queryset = Ticket.objects.all()
 
     def post(self, request):
-        serializer = TicketSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save(creator=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        q = Q() | self.filter_events_by_user_roles(request.GET.getlist('me'))
-        q = q & self.filter_events_by_categories(request.GET.getlist('category'))
+        q = Q() | not_requested_tickets(queryset=self.queryset, user=request.user)
+        q = q & filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
+        q = q & filter_by_categories(request.GET.getlist('category'))
 
-        tickets = Ticket.objects.filter(q).distinct().order_by('-id')
-        serializer = TicketSerializer(instance=tickets, many=True)
+        tickets = self.queryset.filter(q).distinct().order_by('-id')
+        serializer = self.serializer_class(instance=tickets, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
