@@ -1,7 +1,9 @@
 from django.contrib.auth.models import User
 from django.db import models
-from token_auth.models import UserProfile
+
 from common.models import Category
+from events.models import GeoPoint
+from token_auth.models import UserProfile
 
 
 class Ticket(models.Model):

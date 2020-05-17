@@ -21,7 +21,7 @@ class EventSerializer(ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('id', 'creator', 'created', 'description', 'categories', 'members', 'geo_point', 'date', 'time')
+        fields = '__all__'
 
     def create(self, validated_data):
         geo_point_validated = validated_data.pop('geo_point')

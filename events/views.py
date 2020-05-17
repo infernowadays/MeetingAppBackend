@@ -76,14 +76,6 @@ class PushView(APIView):
         # [END send_to_topic]
 
 
-# def post(request):
-#     serializer = EventSerializer(data=request.data)
-#     if serializer.is_valid():
-#         serializer.save(creator=request.user)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class EventListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
