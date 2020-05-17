@@ -20,8 +20,6 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - DEBUG=0
-    ports:
-    - 8888:8000
 
   pg:
     image: mdillon/postgis:9.5-alpine
@@ -33,5 +31,10 @@ services:
   redis:
     image: redis:3.0.6-alpine
 
-  # TODO: add nginx
-
+  nginx:
+    images: nginx:stable-alpine
+    volumes:
+      - ./nginx/mysite.template:/etc/nginx/conf.d/mysite.template
+    command: /bin/bash -c "envsubst < /etc/nginx/conf.d/mysite.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+    ports:
+      8888:80
