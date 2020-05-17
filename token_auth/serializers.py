@@ -55,5 +55,11 @@ class UserProfileSerializer(ModelSerializer):
                 category = category.get()
             UserProfileCategories.objects.create(user_profile=instance, category=category)
 
+        instance.city = validated_data.get('city', instance.city)
+        instance.job = validated_data.get('job', instance.job)
+        instance.education = validated_data.get('education', instance.education)
+        instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
+        instance.sex = validated_data.get('sex', instance.sex)
         instance.save()
+
         return instance

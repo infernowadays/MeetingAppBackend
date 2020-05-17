@@ -43,12 +43,12 @@ class UploadPhotoView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
-    def post(self, request, pk):
+    def post(self, request):
         serializer = ProfilePhotoSerializer(data=request.data)
         if serializer.is_valid():
             photo = serializer.save()
 
-            profile = UserProfile.objects.get(pk=pk)
+            profile = request.user
             profile.photo = photo
             profile.save()
 
