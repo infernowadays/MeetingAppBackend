@@ -19,6 +19,9 @@ services:
       - PG_USER=user
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - DEBUG=0
+    ports:
+    - 8888:8000
 
   pg:
     image: mdillon/postgis:9.5-alpine
