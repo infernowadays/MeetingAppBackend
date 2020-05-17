@@ -31,4 +31,4 @@ COPY . .
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
-CMD gunicorn MeetingApp.wsgi:application
+CMD gunicorn MeetingApp.wsgi:application 0.0.0.0:8000
