@@ -1,10 +1,12 @@
-from django.contrib.auth.models import User
-from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group
-from common.models import SubCategory
-from .enums import Sex
 import datetime
 import os
+
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group
+from django.contrib.auth.models import User
+from django.db import models
+
+from common.models import SubCategory
+from .enums import Sex
 
 
 def get_path_for_profile_photo(instance, filename):
@@ -22,25 +24,27 @@ class ProfilePhoto(models.Model):
 
 
 class UserProfileManager(BaseUserManager):
-    def create_user(self, email, username, password=None):
+    def create_user(self, email, first_name, last_name, password=None):
         if not email:
             raise ValueError("set email")
-        if not username:
-            raise ValueError("set username")
+        if not first_name or not last_name:
+            raise ValueError("provide first name and last name")
 
         user = self.model(
             email=self.normalize_email(email),
-            username=username
+            first_name=first_name,
+            last_name=last_name
         )
 
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, username, password=None):
+    def create_superuser(self, email, first_name, last_name, password=None):
         user = self.model(
             email=self.normalize_email(email),
-            username=username
+            first_name=first_name,
+            last_name=last_name
         )
 
         user.set_password(password)
@@ -54,9 +58,8 @@ class UserProfileManager(BaseUserManager):
 
 class UserProfile(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name='email', max_length=60, unique=True)
-    username = models.CharField(max_length=64, null=False)
-    first_name = models.CharField(max_length=64, blank=True)
-    last_name = models.CharField(max_length=64, blank=True)
+    first_name = models.CharField(max_length=64, null=False, blank=False)
+    last_name = models.CharField(max_length=64, null=False, blank=False)
     city = models.CharField(max_length=64, null=True, blank=True)
     education = models.CharField(max_length=64, null=True, blank=True)
     job = models.CharField(max_length=64, null=True, blank=True)
@@ -70,9 +73,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
+    confirmed = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', ]
+    REQUIRED_FIELDS = ['first_name', 'last_name', ]
 
     objects = UserProfileManager()
 
