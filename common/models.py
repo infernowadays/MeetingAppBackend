@@ -6,3 +6,11 @@ class Category(models.Model):
 
     class Meta:
         db_table = 'category'
+
+
+class SubCategory(models.Model):
+    name = models.TextField(null=False, unique=True)
+    parent_category = models.ForeignKey(Category, null=False, on_delete=models.CASCADE, related_name='sub_categories')
+
+    class Meta:
+        db_table = 'sub_category'

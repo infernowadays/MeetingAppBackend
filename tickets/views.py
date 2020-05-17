@@ -1,35 +1,37 @@
-from django.http import JsonResponse
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from common.utils import *
 from .models import Ticket
 from .serializers import TicketSerializer
 
 
-class TicketView(APIView):
+class TicketListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
+    serializer_class = TicketSerializer
+    queryset = Ticket.objects.all()
 
     def post(self, request):
-        serializer = TicketSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save(creator=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @staticmethod
-    def get(request):
-        tickets = Ticket.objects.filter(creator=request.user)
-        serializer = TicketSerializer(tickets, many=True)
+    def get(self, request):
+        q = Q() | not_requested_tickets(queryset=self.queryset, user=request.user)
+        q = q & filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
+        q = q & filter_by_categories(request.GET.getlist('category'))
+
+        tickets = self.queryset.filter(q).distinct().order_by('-id')
+        serializer = self.serializer_class(instance=tickets, many=True)
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TicketDetailView(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-
     @staticmethod
     def get_object(pk):
         try:
@@ -37,15 +39,14 @@ class TicketDetailView(APIView):
         except Ticket.DoesNotExist:
             raise Http404
 
-    @staticmethod
-    def get(request, pk):
-        ticket = Ticket.objects.filter(pk=pk)
+    def get(self, request, pk):
+        ticket = self.get_object(pk)
         serializer = TicketSerializer(ticket)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):
         ticket = self.get_object(pk)
-        serializer = TicketSerializer(event, data=request.data)
+        serializer = TicketSerializer(ticket, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

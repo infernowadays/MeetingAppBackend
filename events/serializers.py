@@ -21,7 +21,7 @@ class EventSerializer(ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('id', 'creator', 'created', 'description', 'categories', 'members', 'geo_point', 'date', 'time')
+        fields = '__all__'
 
     def create(self, validated_data):
         geo_point_validated = validated_data.pop('geo_point')
@@ -47,8 +47,6 @@ class EventSerializer(ModelSerializer):
 
 
 class RequestSerializer(ModelSerializer):
-    # from_user = StringRelatedField(read_only=True)
-    # to_user = StringRelatedField(read_only=True)
     from_user = serializers.IntegerField(source='from_user.id', read_only=True)
     to_user = serializers.IntegerField(source='to_user.id', read_only=True)
     event = serializers.IntegerField(source='event.id', read_only=True)

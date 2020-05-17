@@ -1,8 +1,5 @@
-import firebase_admin
-from django.db.models import Q
 from django.http import Http404
 from django.http import JsonResponse
-from firebase_admin import credentials
 from firebase_admin import messaging
 from pyfcm import FCMNotification
 from rest_framework import status
@@ -11,8 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from common.utils import *
 from realtime.messaging import send_event_request, send_event_response_request
-from .enums import Decision
 from .models import *
 from .serializers import EventSerializer, RequestSerializer
 
@@ -76,46 +73,11 @@ class PushView(APIView):
         # [END send_to_topic]
 
 
-# def post(request):
-#     serializer = EventSerializer(data=request.data)
-#     if serializer.is_valid():
-#         serializer.save(creator=request.user)
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
 class EventListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
-
-    def not_requested_events(self):
-        events_ids = Event.objects.all().values_list('id', flat=True)
-        requested_events = Request.objects.filter(event__in=events_ids, from_user=self.request.user).values_list(
-            'event', flat=True)
-
-        return ~Q(id__in=requested_events)
-
-    def filter_events_by_user_roles(self, list_roles):
-        q = Q()
-        if list_roles:
-            for role in list_roles:
-                if role == 'creator':
-                    q = q | Q(creator=self.request.user)
-                elif role == 'member':
-                    q = q | Q(members=self.request.user)
-
-        else:
-            q = Q(~Q(creator=self.request.user) & ~Q(members=self.request.user) & self.not_requested_events())
-
-        return q
-
-    @staticmethod
-    def filter_events_by_categories(list_categories):
-        if list_categories:
-            categories = Category.objects.filter(name__in=list_categories).values_list('id', flat=True)
-            return Q(categories__in=categories)
-        else:
-            return Q()
+    serializer_class = EventSerializer
+    queryset = Event.objects.all()
 
     def post(self, request):
         serializer = EventSerializer(data=request.data)
@@ -125,16 +87,20 @@ class EventListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        q = Q() | self.filter_events_by_user_roles(request.GET.getlist('me'))
-        q = q & self.filter_events_by_categories(request.GET.getlist('category'))
+        q = Q() | filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
+        q = q & not_requested_events(queryset=self.queryset, user=request.user)
+        q = q & filter_by_categories(request.GET.getlist('category'))
 
-        events = Event.objects.filter(q).distinct().order_by('-id')
-        serializer = EventSerializer(instance=events, many=True)
+        events = self.queryset.filter(q).distinct().order_by('-id')
+        serializer = self.serializer_class(instance=events, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class EventDetailView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
     @staticmethod
     def get_object(pk):
         try:

@@ -1,5 +1,4 @@
 from django.contrib.auth import authenticate
-
 from django.http import Http404
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
@@ -7,12 +6,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-import datetime
+
 from .serializers import *
-from firebase_admin import auth, db
-import firebase_admin
-from events.models import Category
-from events.serializers import CategorySerializer
 
 
 class SignUpView(APIView):
@@ -21,14 +16,7 @@ class SignUpView(APIView):
     def post(self, request):
         serializer = UserProfileSerializer(data=request.data)
         if serializer.is_valid():
-
-            firebase_user = auth.create_user(
-                email=request.data.get('email'),
-                password=request.data.get('password')
-            )
-
-            serializer.save(firebase_uid=firebase_user.uid)
-
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -46,7 +34,7 @@ class LoginView(APIView):
         user = authenticate(email=email, password=password)
         if not user:
             raise Http404
-        token,_ = Token.objects.get_or_create(user=user)
+        token, _ = Token.objects.get_or_create(user=user)
 
         return Response({'token': token.key})
 
@@ -55,12 +43,12 @@ class UploadPhotoView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
-    def post(self, request, pk):
+    def post(self, request):
         serializer = ProfilePhotoSerializer(data=request.data)
         if serializer.is_valid():
             photo = serializer.save()
 
-            profile = UserProfile.objects.get(pk=pk)
+            profile = request.user
             profile.photo = photo
             profile.save()
 
@@ -123,7 +111,7 @@ class MyProfileView(APIView):
     def put(self, request):
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(categories=request.data.get('categories'))
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
