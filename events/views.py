@@ -79,6 +79,7 @@ class PushView(APIView):
 class EventListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
+    serializer_class = EventSerializer
 
     def not_requested_events(self):
         events_ids = Event.objects.all().values_list('id', flat=True)
@@ -121,7 +122,7 @@ class EventListView(APIView):
         q = q & self.filter_events_by_categories(request.GET.getlist('category'))
 
         events = Event.objects.filter(q).distinct().order_by('-id')
-        serializer = EventSerializer(instance=events, many=True)
+        serializer = self.serializer_class(instance=events, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
