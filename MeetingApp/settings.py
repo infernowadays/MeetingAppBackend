@@ -100,30 +100,30 @@ WSGI_APPLICATION = 'MeetingApp.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'meeting_app_backend',
-            'USER': 'postgres',
-            'PASSWORD': '1qaz@WSX',
-            'HOST': '127.0.0.1',
-            'PORT': '5432',
-        }
+# if DEBUG:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'meeting_app_backend',
+        'USER': env('PG_USER'),
+        'PASSWORD': env('PG_PASSWORD'),
+        'HOST': env('PG_HOST'),
+        'PORT': env('PG_PORT'),
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        }
-    }
-
-    db_from_env = dj_database_url.config()
-    DATABASES['default'].update(db_from_env)
-
-    django_heroku.settings(locals())
-    del DATABASES['default']['OPTIONS']['sslmode']
+}
+# else:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#         }
+#     }
+#
+#     db_from_env = dj_database_url.config()
+#     DATABASES['default'].update(db_from_env)
+#
+#     django_heroku.settings(locals())
+#     del DATABASES['default']['OPTIONS']['sslmode']
 
 
 # Password validation

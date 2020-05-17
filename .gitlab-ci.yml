@@ -1,0 +1,41 @@
+
+stages:
+  - build
+  - test
+  - deploy
+  - remove
+
+build:
+  stage: build
+  script:
+    - make_service_account_key_json
+    - docker-compose build
+
+test:
+  stage: test
+  script:
+    - docker-compose run app python manage.py test -v=2
+
+deploy:
+  stage: deploy
+  script:
+    - docker-compose up -d
+
+remove:
+  stage: remove
+  when: manual
+  script:
+    - docker-compose down
+
+.auto_devops: &auto_devops |
+  TRACE=1
+  [[ "$TRACE" ]] && set -x
+
+  function make_service_account_key_json() {
+    set -o nounset  # Treat unset variables as an error
+
+    echo $FIREBASE_SERVICE_ACCOUNT_KEY_JSON > serviceAccountKey.json
+  }
+
+before_script:
+  - *auto_devops
