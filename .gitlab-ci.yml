@@ -32,7 +32,9 @@ remove:
   [[ "$TRACE" ]] && set -x
 
   function make_service_account_key_json() {
-    echo 'hi'
+    set -o nounset  # Treat unset variables as an error
+
+    echo $FIREBASE_SERVICE_ACCOUNT_KEY_JSON > serviceAccountKey.json
   }
 
 before_script:
