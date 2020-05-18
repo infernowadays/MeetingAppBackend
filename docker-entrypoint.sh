@@ -19,6 +19,6 @@
 
 set -o nounset                              # Treat unset variables as an error
 
-dockerize -wait tcp://$PG_HOST:$PG_PORT -timeout 60s -- python manage.py migrate
+dockerize -wait tcp://$PG_HOST:$PG_PORT -timeout 60s -- python manage.py migrate --noinput
 
 exec "$@"
