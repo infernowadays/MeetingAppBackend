@@ -27,6 +27,8 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=user
       - POSTGRES_DB=meeting_app_backend
+    ports:
+    - 127.0.0.1:5432:5432
 
   redis:
     image: redis:3.0.6-alpine
