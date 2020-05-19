@@ -60,6 +60,8 @@ class UserProfileSerializer(ModelSerializer):
         instance.education = validated_data.get('education', instance.education)
         instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
         instance.sex = validated_data.get('sex', instance.sex)
+        instance.is_filled = validated_data.get('is_filled', instance.is_filled)
+
         instance.save()
 
         return instance
