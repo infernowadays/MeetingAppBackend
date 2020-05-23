@@ -201,32 +201,29 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
-        },
+        }
     },
     'handlers': {
         'null': {
             'level': 'DEBUG',
-            'class': 'logging.NullHandler',
+            'class': 'logging.NullHandler'
         },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple'
+            'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
-            'filters': [],
+            'filters': []
         }
     },
     'loggers': {
         '': {
-            'handlers': 'console',
+            'handlers': ['console'],
             'propagate': True,
-            'level': 'DEBUG',
-        },
+            'level': 'DEBUG'
+        }
     }
 }
