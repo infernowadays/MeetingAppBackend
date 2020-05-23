@@ -14,7 +14,7 @@ build:
 test:
   stage: test
   script:
-    - docker-compose run app python manage.py test -v=2
+    - docker-compose run app python manage.py test -v=2 --noinput
 
 deploy:
   stage: deploy
