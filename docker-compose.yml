@@ -21,6 +21,27 @@ services:
       - REDIS_PORT=6379
       - DEBUG=0
 
+  django-channels-worker:
+    build:
+      context: .
+    depends_on:
+      - redis
+      - pg
+      - app
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME}
+      - PG_HOST=pg
+      - PG_PORT=5432
+      - PG_PASSWORD=password
+      - PG_USER=user
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DEBUG=0
+    command: python manage.py runworker realtime_event_sender
+
   pg:
     image: mdillon/postgis:9.5-alpine
     environment:
