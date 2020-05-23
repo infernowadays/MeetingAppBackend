@@ -34,3 +34,5 @@ ENTRYPOINT ["/app/docker-entrypoint.sh"]
 ENV PYTHONUNBUFFERED 1
 
 CMD gunicorn MeetingApp.wsgi:application --bind 0.0.0.0:8000
+
+EXPOSE 8000
