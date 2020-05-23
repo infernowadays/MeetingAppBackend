@@ -9,10 +9,6 @@ RUN apt update && \
 		wget && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-
-RUN pip install -r requirements.txt
-
 ENV DOCKERIZE_VERSION v0.6.1
 
 RUN export DOCKERIZE_DOWNLOAD_URL=https://github.com/jwilder/dockerize/releases/download && \
@@ -20,6 +16,10 @@ RUN export DOCKERIZE_DOWNLOAD_URL=https://github.com/jwilder/dockerize/releases/
             $DOCKERIZE_DOWNLOAD_URL/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz &&  \
         tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && \
         rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
 
 RUN apt remove -y   \
         build-essential \
