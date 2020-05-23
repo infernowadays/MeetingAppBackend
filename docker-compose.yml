@@ -36,13 +36,16 @@ services:
     image: redis:3.0.6-alpine
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
     depends_on:
       - app
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
     ports:
-      - 8888:80
+      - 443:443
+      - 80:80
 
 volumes:
   db-data:
