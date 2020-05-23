@@ -27,16 +27,22 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=user
       - POSTGRES_DB=meeting_app_backend
+    volumes:
+      - db-data:/var/lib/postgresql/data
     ports:
-    - 127.0.0.1:5432:5432
+      - 127.0.0.1:5432:5432
 
   redis:
     image: redis:3.0.6-alpine
 
-  nginx:
-    image: nginx
-    volumes:
-      - ./nginx/mysite.template:/etc/nginx/conf.d/mysite.template
-    command: /bin/bash -c "envsubst < /etc/nginx/conf.d/mysite.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
-    ports:
-      - 8888:80
+#  nginx:
+#    image: nginx
+#    volumes:
+#      - ./nginx/mysite.template:/etc/nginx/conf.d/mysite.template
+#    command: /bin/bash -c "envsubst < /etc/nginx/conf.d/mysite.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+#    ports:
+#      - 8888:80
+
+volumes:
+  db-data:
+  driver: local
