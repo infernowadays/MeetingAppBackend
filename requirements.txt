@@ -68,3 +68,4 @@ uvicorn==0.11.3
 websockets==8.1
 whitenoise==5.0.1
 zope.interface==5.0.2
+django-extensions==2.2.9
