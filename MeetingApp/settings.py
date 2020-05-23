@@ -34,7 +34,7 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 print('DEBUG =', DEBUG)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2', 'app']
 
 ASGI_APPLICATION = "MeetingApp.routing.application"
 CHANNEL_LAYERS = {
