@@ -28,7 +28,7 @@ remove:
     - docker-compose down
 
 .auto_devops: &auto_devops |
-  TRACE=1
+  TRACE=0
   [[ "$TRACE" ]] && set -x
 
   function make_service_account_key_json() {
