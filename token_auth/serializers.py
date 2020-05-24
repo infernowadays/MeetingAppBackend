@@ -6,6 +6,20 @@ from common.serializers import SubCategorySerializer
 from .models import UserProfile, ProfilePhoto, UserProfileCategories
 
 
+class DynamicFieldsModelSerializer(ModelSerializer):
+
+    def __init__(self, *args, **kwargs):
+        fields = kwargs.pop('fields', None)
+
+        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
+
+        if fields is not None:
+            allowed = set(fields)
+            existing = set(self.fields.keys())
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
+
+
 class TokenSerializer(ModelSerializer):
     user = UserProfile
 
@@ -20,22 +34,25 @@ class ProfilePhotoSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class UserProfileSerializer(ModelSerializer):
+class UserProfileSerializer(DynamicFieldsModelSerializer):
     photo = ProfilePhotoSerializer(read_only=True)
     categories = SubCategorySerializer(many=True, read_only=True, required=False)
 
     class Meta:
         model = UserProfile
         fields = '__all__'
-        read_only_fields = ["categories"]
 
     def to_representation(self, obj):
         profile = super(UserProfileSerializer, self).to_representation(obj)
-        profile.pop('password')
-        profile.pop('is_active')
-        profile.pop('is_admin')
-        profile.pop('last_login')
-        profile.pop('vk_token')
+        # profile.pop('password')
+        # profile.pop('is_active')
+        # profile.pop('is_admin')
+        # profile.pop('is_staff')
+        # profile.pop('is_superuser')
+        # profile.pop('last_login')
+        # profile.pop('user_permissions')
+        # profile.pop('groups')
+        # profile.pop('vk_token')
 
         return profile
 

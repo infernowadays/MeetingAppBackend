@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from common.utils import *
 from realtime.messaging import send_event_request, send_event_response_request
+from token_auth.serializers import UserProfileSerializer
 from .models import *
 from .serializers import EventSerializer, RequestSerializer
 
@@ -160,7 +161,14 @@ class RequestsListView(APIView):
 
     def get(self, request):
         requests = Request.objects.filter(to_user=request.user).order_by('-created')
+
+        fields = ('id', 'first_name', 'last_name', 'photo')
         serializer = RequestSerializer(instance=requests, many=True)
+
+        for request in serializer.data:
+            from_user = UserProfileSerializer(UserProfile.objects.get(id=request['from_user']), fields=fields).data
+            request['from_user'] = from_user
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
