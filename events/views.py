@@ -7,7 +7,6 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from common.utils import *
 from realtime.messaging import send_event_request, send_event_response_request
 from token_auth.serializers import UserProfileSerializer
