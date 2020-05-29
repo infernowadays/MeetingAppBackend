@@ -40,7 +40,7 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - DEBUG=0
-    command: python manage.py runworker realtime_event_sender
+    command: python manage.py runworker realtime-event-sender
 
   pg:
     image: mdillon/postgis:9.5-alpine

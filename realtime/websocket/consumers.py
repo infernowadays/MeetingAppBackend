@@ -1,4 +1,5 @@
 import json
+import logging
 
 from channels.generic.websocket import AsyncWebsocketConsumer
 
@@ -8,6 +9,7 @@ from .utils import construct_group_name_from_uid
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # Get the user object (provided by the TokenAuthMiddleware in MeetingApp/routing.py)
+        logging.debug('ChatConsumer.connect(), self.scope: {}'.format(self.scope))
         self.user = self.scope["user"]
 
         if self.user.is_anonymous:

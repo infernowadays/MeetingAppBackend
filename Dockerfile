@@ -33,6 +33,6 @@ ENTRYPOINT ["/app/docker-entrypoint.sh"]
 
 ENV PYTHONUNBUFFERED 1
 
-CMD gunicorn MeetingApp.wsgi:application --bind 0.0.0.0:8000
+CMD daphne MeetingApp.asgi:application -b 0.0.0.0 -p 8000
 
 EXPOSE 8000
