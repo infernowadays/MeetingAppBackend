@@ -205,7 +205,7 @@ class RespondRequestView(APIView):
             elif serializer.data.get('decision') == Decision.DECLINE:
                 event_request.delete()
 
-            # self.send_websocket(serializer.data.get('id'))
+            self.send_websocket(serializer.data.get('id'))
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
