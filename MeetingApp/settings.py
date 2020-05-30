@@ -104,7 +104,7 @@ if DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'meeting_app_backend',
+            'NAME': 'meeting_app',
             'USER': 'postgres',
             'PASSWORD': '1qaz@WSX',
             'HOST': '127.0.0.1',
