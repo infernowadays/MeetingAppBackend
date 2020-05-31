@@ -18,7 +18,7 @@ test:
     - dev
   stage: test
   script:
-    - docker-compose run app python manage.py test -v=2 --noinput
+    - docker-compose run --rm app python manage.py test -v=2 --noinput
 
 deploy:
   tags:
