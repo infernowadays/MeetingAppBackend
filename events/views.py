@@ -151,7 +151,7 @@ class RequestsListView(APIView):
     def post(self, request):
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
-            from_user = self.get_object(request.data['from_user'])
+            from_user = self.get_object(request.user.pk)
             to_user = self.get_object(request.data['to_user'])
 
             event = Event.objects.get(id=request.data['event'])
