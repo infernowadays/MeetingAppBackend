@@ -165,13 +165,7 @@ class RequestListView(APIView):
 
     def get(self, request):
         requests = Request.objects.filter(to_user=request.user).order_by('-created')
-
-        fields = ('id', 'first_name', 'last_name', 'photo')
         serializer = RequestSerializer(instance=requests, many=True)
-
-        for request in serializer.data:
-            from_user = UserProfileSerializer(UserProfile.objects.get(id=request['from_user']), fields=fields).data
-            request['from_user'] = from_user
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
