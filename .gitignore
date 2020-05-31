@@ -43,9 +43,15 @@ ENV/
 
 # Environ
 MeetingApp/.env
+.env
+.envrc
 
 # PyCharm
 .idea
 
 # Firebase Key
 serviceAccountKey.json
+
+docker-compose.override.yml
+docker-compose-test.yml
+
