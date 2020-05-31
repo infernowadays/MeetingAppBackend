@@ -25,12 +25,15 @@ def send_event_request(event_request):
 
 
 def send_event_response_request(event_request):
+    fields = ('id', 'first_name', 'last_name', 'photo')
+    from_user = UserProfileSerializer(UserProfile.objects.get(email=event_request.to_user), fields=fields).data
+
     _send_realtime_event_to_user(
         to_user_ids=[event_request.to_user.id],
         realtime_event=RequestEvent(
             id=event_request.id,
             event=event_request.event.id,
-            from_user=event_request.to_user.id,
+            from_user=from_user,
             to_user=event_request.from_user.id,
             decision=event_request.decision,
             created=event_request.created,
