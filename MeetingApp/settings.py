@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 
 import os
 
-import environ
 import dj_database_url
 import django_heroku
+import environ
 import firebase_admin
 from firebase_admin import credentials
 
@@ -27,7 +27,6 @@ env = environ.Env(
 )
 # reading .env file
 environ.Env.read_env()
-
 
 SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -69,6 +68,7 @@ INSTALLED_APPS = [
     'chat',
     'channels',
     'realtime',
+    'email_service',
 ]
 
 MIDDLEWARE = [
@@ -128,7 +128,6 @@ DATABASES = {
 #
 #     django_heroku.settings(locals())
 #     del DATABASES['default']['OPTIONS']['sslmode']
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -231,3 +230,10 @@ LOGGING = {
         }
     }
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')

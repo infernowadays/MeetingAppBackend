@@ -1,5 +1,5 @@
 from django.contrib.auth import authenticate
-from django.http import Http404, HttpResponseBadRequest
+from django.http import Http404
 from rest_framework import status
 from rest_framework import serializers
 from rest_framework.authentication import TokenAuthentication

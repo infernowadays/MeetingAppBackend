@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 
 from common.utils import *
 from realtime.messaging import send_event_request, send_event_response_request
+from token_auth.serializers import UserProfileSerializer
 from .models import *
 from .serializers import EventSerializer, RequestSerializer
 
@@ -82,7 +83,11 @@ class EventListView(APIView):
     def post(self, request):
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(creator=self.request.user)
+            categories = request.data.get('categories')
+            if categories is not None:
+                serializer.save(creator=self.request.user, categories=categories)
+            else:
+                serializer.save(creator=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -160,7 +165,14 @@ class RequestListView(APIView):
 
     def get(self, request):
         requests = Request.objects.filter(to_user=request.user).order_by('-created')
+
+        fields = ('id', 'first_name', 'last_name', 'photo')
         serializer = RequestSerializer(instance=requests, many=True)
+
+        for request in serializer.data:
+            from_user = UserProfileSerializer(UserProfile.objects.get(id=request['from_user']), fields=fields).data
+            request['from_user'] = from_user
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -194,7 +206,7 @@ class RespondRequestView(APIView):
             elif serializer.data.get('decision') == Decision.DECLINE:
                 event_request.delete()
 
-            # self.send_websocket(serializer.data.get('id'))
+            self.send_websocket(serializer.data.get('id'))
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

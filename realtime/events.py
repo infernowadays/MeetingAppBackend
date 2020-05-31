@@ -25,7 +25,7 @@ class RequestEvent:
 
     @property
     def from_user(self):
-        return str(self._from_user)
+        return self._from_user
 
     @property
     def to_user(self):
@@ -37,7 +37,7 @@ class RequestEvent:
 
     @property
     def created(self):
-        return str(self._created)
+        return self._created.strftime(WEBSOCKET_DATE_TIME_FORMAT)
 
     @property
     def properties_dict(self):
@@ -66,7 +66,7 @@ class MessageEvent:
 
     @property
     def from_user(self):
-        return self._from_user
+        return str(self._from_user)
 
     @property
     def text(self):
@@ -74,7 +74,7 @@ class MessageEvent:
 
     @property
     def created(self):
-        return self._created.strftime(WEBSOCKET_DATE_TIME_FORMAT)
+        return str(self._created)
 
     @property
     def event(self):
@@ -117,7 +117,7 @@ class PrivateMessageEvent:
 
     @property
     def created(self):
-        return self._created.strftime(WEBSOCKET_DATE_TIME_FORMAT)
+        return str(self._created)
 
     @property
     def properties_dict(self):

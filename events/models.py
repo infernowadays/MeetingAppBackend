@@ -1,7 +1,7 @@
 from django.db import models
 from token_auth.models import UserProfile
 from .enums import Decision
-from common.models import Category
+from common.models import Category, SubCategory
 
 
 class GeoPoint(models.Model):
@@ -22,10 +22,19 @@ class Event(models.Model):
     creator = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now=True)
     members = models.ManyToManyField(UserProfile, related_name='events')
-    categories = models.ManyToManyField(Category, related_name='events', blank=True)
+    categories = models.ManyToManyField(SubCategory, through='EventCategories')
 
     class Meta:
         db_table = 'event'
+
+
+class EventCategories(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, null=False)
+    category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, null=False)
+
+    class Meta:
+        db_table = 'event_categories'
+        unique_together = ['event', 'category']
 
 
 class Request(models.Model):

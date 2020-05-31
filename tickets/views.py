@@ -1,5 +1,8 @@
+from django.http import Http404
+from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from common.utils import *
@@ -21,9 +24,10 @@ class TicketListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        q = Q() | not_requested_tickets(queryset=self.queryset, user=request.user)
-        q = q & filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
-        q = q & filter_by_categories(request.GET.getlist('category'))
+        # q = Q() | not_requested_tickets(queryset=self.queryset, user=request.user)
+        # q = q & filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
+        # q = q & filter_by_categories(request.GET.getlist('category'))
+        q = Q()
 
         tickets = self.queryset.filter(q).distinct().order_by('-id')
         serializer = self.serializer_class(instance=tickets, many=True)
