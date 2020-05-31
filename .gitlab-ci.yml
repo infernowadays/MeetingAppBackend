@@ -7,21 +7,29 @@ stages:
 
 build:
   stage: build
+  tags:
+    - dev
   script:
     - make_service_account_key_json
     - docker-compose build
 
 test:
+  tags:
+    - dev
   stage: test
   script:
     - docker-compose run app python manage.py test -v=2 --noinput
 
 deploy:
+  tags:
+    - dev
   stage: deploy
   script:
     - docker-compose up -d
 
 remove:
+  tags:
+    - dev
   stage: remove
   when: manual
   script:
