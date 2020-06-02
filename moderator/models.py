@@ -5,6 +5,8 @@ from .enums import ContentType
 
 
 class Complaint(models.Model):
+    supplier = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
+                                 related_name='supplies')
     user_profile = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
                                      related_name='complaints')
     message = models.CharField(max_length=256, null=False, blank=False)
@@ -16,6 +18,7 @@ class Complaint(models.Model):
         blank=False
     )
     reviewed = models.BooleanField(default=False)
+    created = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'complaint'
