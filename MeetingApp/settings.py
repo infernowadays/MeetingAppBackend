@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     'channels',
     'realtime',
     'email_service',
+    'moderator',
 ]
 
 MIDDLEWARE = [

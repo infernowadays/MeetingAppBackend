@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/', include('chat.urls')),
     path('api/', include('common.urls')),
     path('api/', include('email_service.urls')),
+    path('api/', include('moderator.urls')),
 ]
