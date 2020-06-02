@@ -13,6 +13,13 @@ class ComplaintListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
+    def post(self, request):
+        serializer = ComplaintSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def get(self, request):
         complaints = Complaint.objects.filter(reviewed=False)
         serializer = ComplaintSerializer(complaints, many=True)
@@ -44,7 +51,7 @@ class ComplaintDetailView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class UserProfileWarningView(APIView):
+class UserProfileWarningListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
