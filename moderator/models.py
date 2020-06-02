@@ -7,6 +7,7 @@ from .enums import ContentType
 class Complaint(models.Model):
     user_profile = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
                                      related_name='complaints')
+    message = models.CharField(max_length=256, null=False, blank=False)
     content_id = models.IntegerField(null=False, blank=False)
     content_type = models.CharField(
         max_length=8,
@@ -23,6 +24,7 @@ class Complaint(models.Model):
 class UserProfileWarning(models.Model):
     user_profile = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
                                      related_name='warnings')
+    complaint = models.ForeignKey(Complaint, null=False, db_constraint=True, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'user_profile_warning'

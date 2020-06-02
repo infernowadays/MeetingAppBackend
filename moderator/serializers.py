@@ -12,6 +12,7 @@ class ComplaintSerializer(ModelSerializer):
 
 class UserProfileWarningSerializer(ModelSerializer):
     user_profile = serializers.IntegerField(source='user_profile.id', read_only=True)
+    complaint = serializers.IntegerField(source='complaint.id', read_only=True)
 
     class Meta:
         model = UserProfileWarning
