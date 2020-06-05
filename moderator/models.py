@@ -7,8 +7,8 @@ from .enums import ContentType
 class Complaint(models.Model):
     supplier = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
                                  related_name='supplies')
-    user_profile = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
-                                     related_name='complaints')
+    suspected = models.ForeignKey(UserProfile, null=False, db_constraint=True, on_delete=models.CASCADE,
+                                  related_name='complaints')
     message = models.CharField(max_length=256, null=False, blank=False)
     content_id = models.IntegerField(null=False, blank=False)
     content_type = models.CharField(

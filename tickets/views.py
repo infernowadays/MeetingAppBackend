@@ -36,6 +36,9 @@ class TicketListView(APIView):
 
 
 class TicketDetailView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
     @staticmethod
     def get_object(pk):
         try:

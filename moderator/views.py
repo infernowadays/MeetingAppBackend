@@ -39,7 +39,7 @@ class ComplaintDetailView(APIView):
 
     def get(self, request, pk):
         complaint = self.get_object(pk)
-        serializer = Complaint(complaint)
+        serializer = ComplaintSerializer(complaint)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, pk):

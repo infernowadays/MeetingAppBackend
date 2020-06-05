@@ -5,7 +5,7 @@ from rest_framework import status
 
 
 class TestTicketListView(APITestCase):
-    def test_get_list(self):
+    def test_get_tickets(self):
         url = '/api/tickets/'
         response = self.client.get(url)
         self.assertEqual(status.HTTP_401_UNAUTHORIZED, response.status_code)
