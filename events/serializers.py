@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, StringRelatedField, IntegerField
+from rest_framework.serializers import ModelSerializer
 
-from common.serializers import CategorySerializer, SubCategorySerializer, SubCategory
+from common.serializers import SubCategorySerializer, SubCategory
 from token_auth.serializers import UserProfileSerializer
 from .models import Event, Request, GeoPoint, EventCategories
 
@@ -75,3 +75,24 @@ class RequestSerializer(ModelSerializer):
         model = Request
         fields = '__all__'
         extra_kwargs = {'decision': {'required': False}}
+
+#####
+class SendRequestSerializer(ModelSerializer):
+    to_user = serializers.IntegerField(source='to_user.id', read_only=True)
+    from_user = UserProfileSerializer(read_only=True)
+    event = serializers.IntegerField(source='event.id', read_only=True)
+
+    class Meta:
+        model = Request
+        fields = '__all__'
+        extra_kwargs = {'decision': {'required': False}}
+
+
+class GetRequestSerializer(ModelSerializer):
+    to_user = UserProfileSerializer(read_only=True)
+    from_user = UserProfileSerializer(read_only=True)
+    event = serializers.IntegerField(source='event.id', read_only=True)
+
+    class Meta:
+        model = Request
+        fields = '__all__'

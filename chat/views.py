@@ -16,7 +16,10 @@ class ChatsView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        events = request.user.events.all()
+        members_events = request.user.members_events.all()
+        creator_events = request.user.creator_events.all()
+        events = set(members_events | creator_events)
+
         serializer = EventSerializer(instance=events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -42,13 +45,15 @@ class MessageView(APIView):
     def post(self, request):
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
-            event = Event.objects.get(id=request.data['event'])
-            serializer.save(from_user=request.user, event=event)
+            serializer.save(from_user=request.user)
 
-            members_ids = event.members\
-                .all()\
-                .filter(~Q(id=request.user.id))\
+            event = Event.objects.get(id=request.data['event'])
+            members_ids = event.members \
+                .all() \
+                .filter(~Q(id=request.user.id)) \
                 .values_list('id', flat=True)
+
+            # members_ids.
 
             self.send_websocket(serializer.data.get('id'), members_ids)
 

@@ -48,6 +48,8 @@ CHANNEL_LAYERS = {
     },
 }
 
+APPEND_SLASH = False
+
 # Application definition
 
 INSTALLED_APPS = [

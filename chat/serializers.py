@@ -7,7 +7,9 @@ from events.serializers import EventSerializer
 
 class MessageSerializer(ModelSerializer):
     from_user = UserProfileSerializer(read_only=True)
-    chat = EventSerializer(read_only=True)
+    chat = serializers.IntegerField(source='event.id', read_only=True)
+
+    # chat = EventSerializer(read_only=True)
 
     class Meta:
         model = Message

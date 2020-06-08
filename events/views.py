@@ -85,9 +85,12 @@ class EventListView(APIView):
         if serializer.is_valid():
             categories = request.data.get('categories')
             if categories is not None:
-                serializer.save(creator=self.request.user, categories=categories)
+                event = serializer.save(creator=self.request.user, categories=categories)
             else:
-                serializer.save(creator=self.request.user)
+                event = serializer.save(creator=self.request.user)
+
+            event.members.add(request.user)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -164,7 +167,7 @@ class RequestListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        requests = Request.objects.filter(to_user=request.user).order_by('-created')
+        requests = Request.objects.filter(Q(to_user=request.user) | Q(from_user=request.user)).order_by('-created')
         serializer = RequestSerializer(instance=requests, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -193,12 +196,12 @@ class RespondRequestView(APIView):
         if serializer.is_valid():
             serializer.save()
 
-            if serializer.data.get('decision') == Decision.ACCEPT:
+            if serializer.data.get('decision') == Decision.ACCEPT.value:
                 event = Event.objects.get(id=serializer.data.get('event'))
-                user = UserProfile.objects.get(email=serializer.data.get('from_user'))
+                user = UserProfile.objects.get(id=serializer.data.get('from_user').get('id'))
                 event.members.add(user)
-            elif serializer.data.get('decision') == Decision.DECLINE:
-                event_request.delete()
+            # elif serializer.data.get('decision') == Decision.DECLINE.value:
+            #     event_request.delete()
 
             self.send_websocket(serializer.data.get('id'))
 

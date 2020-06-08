@@ -29,7 +29,7 @@ def send_event_response_request(event_request):
     from_user = UserProfileSerializer(UserProfile.objects.get(email=event_request.to_user), fields=fields).data
 
     _send_realtime_event_to_user(
-        to_user_ids=[event_request.to_user.id],
+        to_user_ids=[event_request.from_user.id],
         realtime_event=RequestEvent(
             id=event_request.id,
             event=event_request.event.id,
@@ -42,10 +42,13 @@ def send_event_response_request(event_request):
 
 
 def send_message(message, members_ids):
+    fields = ('id', 'first_name', 'last_name', 'photo')
+    from_user = UserProfileSerializer(UserProfile.objects.get(email=message.from_user), fields=fields).data
+
     _send_realtime_event_to_user(
         to_user_ids=members_ids,
         realtime_event=MessageEvent(
-            from_user=model_to_dict(message.from_user),
+            from_user=from_user,
             text=message.text,
             created=message.created,
             event=message.event.id,
