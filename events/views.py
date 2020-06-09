@@ -155,11 +155,10 @@ class RequestListView(APIView):
     def post(self, request):
         serializer = RequestSerializer(data=request.data)
         if serializer.is_valid():
-            from_user = self.get_object(request.user.pk)
             to_user = self.get_object(request.data['to_user'])
 
             event = Event.objects.get(id=request.data['event'])
-            serializer.save(from_user=from_user, to_user=to_user, event=event)
+            serializer.save(from_user=request.user, to_user=to_user, event=event)
 
             self.send_websocket(serializer.data.get('id'))
 

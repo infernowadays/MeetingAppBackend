@@ -67,32 +67,12 @@ class EventSerializer(ModelSerializer):
 
 
 class RequestSerializer(ModelSerializer):
-    to_user = serializers.IntegerField(source='to_user.id', read_only=True)
-    event = serializers.IntegerField(source='event.id', read_only=True)
-    from_user = UserProfileSerializer(read_only=True)
-
-    class Meta:
-        model = Request
-        fields = '__all__'
-        extra_kwargs = {'decision': {'required': False}}
-
-#####
-class SendRequestSerializer(ModelSerializer):
-    to_user = serializers.IntegerField(source='to_user.id', read_only=True)
-    from_user = UserProfileSerializer(read_only=True)
-    event = serializers.IntegerField(source='event.id', read_only=True)
-
-    class Meta:
-        model = Request
-        fields = '__all__'
-        extra_kwargs = {'decision': {'required': False}}
-
-
-class GetRequestSerializer(ModelSerializer):
     to_user = UserProfileSerializer(read_only=True)
-    from_user = UserProfileSerializer(read_only=True)
     event = serializers.IntegerField(source='event.id', read_only=True)
+    from_user = UserProfileSerializer(read_only=True)
 
     class Meta:
         model = Request
         fields = '__all__'
+        extra_kwargs = {'decision': {'required': False}}
+

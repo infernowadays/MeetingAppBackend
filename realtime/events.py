@@ -29,7 +29,7 @@ class RequestEvent:
 
     @property
     def to_user(self):
-        return str(self._to_user)
+        return self._to_user
 
     @property
     def decision(self):
