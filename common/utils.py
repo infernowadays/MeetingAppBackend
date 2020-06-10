@@ -1,6 +1,7 @@
 from django.db.models import Q
 
-from events.models import Request
+from events.models import Request, EventCategories
+from tickets.models import TicketCategories
 from .models import *
 
 
@@ -38,3 +39,26 @@ def filter_by_categories(list_categories):
         return Q(categories__in=categories)
     else:
         return Q()
+
+
+def set_event_categories(categories, instance):
+    EventCategories.objects.filter(event=instance.id).delete()
+    for string_category in categories:
+        category = SubCategory.objects.filter(name=string_category.get('name'))
+        category = category.get()
+        EventCategories.objects.create(event=instance, category=category)
+
+
+def set_ticket_categories(categories, instance):
+    TicketCategories.objects.filter(ticket=instance.id).delete()
+    for string_category in categories:
+        category = SubCategory.objects.filter(name=string_category.get('name'))
+        category = category.get()
+        TicketCategories.objects.create(ticket=instance, category=category)
+
+
+def set_geo_point(geo_point, validated_data):
+    geo_point.latitude = validated_data.get('geo_point').get('latitude')
+    geo_point.longitude = validated_data.get('geo_point').get('longitude')
+    geo_point.address = validated_data.get('geo_point').get('address')
+    geo_point.save()

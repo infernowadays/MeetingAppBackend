@@ -125,7 +125,11 @@ class EventDetailView(APIView):
         event = self.get_object(pk)
         serializer = EventSerializer(event, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            categories = request.data.get('categories')
+            if categories is not None:
+                serializer.save(categories=categories)
+            else:
+                serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

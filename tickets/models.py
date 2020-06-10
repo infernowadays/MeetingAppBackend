@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 from common.models import Category
+from common.models import SubCategory
 from events.models import GeoPoint
 from token_auth.models import UserProfile
 
@@ -18,7 +19,16 @@ class Ticket(models.Model):
     created = models.DateTimeField(auto_now=True)
     description = models.TextField(null=True, blank=True)
     sold = models.BooleanField(default=False)
-    categories = models.ManyToManyField(Category, related_name='tickets', blank=True)
+    categories = models.ManyToManyField(SubCategory, through='TicketCategories')
 
     class Meta:
         db_table = 'ticket'
+
+
+class TicketCategories(models.Model):
+    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, null=False)
+    category = models.ForeignKey(SubCategory, on_delete=models.CASCADE, null=False)
+
+    class Meta:
+        db_table = 'ticket_categories'
+        unique_together = ['ticket', 'category']

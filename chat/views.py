@@ -62,7 +62,7 @@ class MessageView(APIView):
 
     def get(self, request, event_id):
         event = self.get_object(event_id)
-        messages = event.messages.all()
+        messages = event.messages.all().order_by('created')
         serializer = MessageSerializer(instance=messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
