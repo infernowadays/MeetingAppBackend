@@ -9,7 +9,7 @@ from token_auth.models import UserProfile
 class Ticket(models.Model):
     name = models.TextField(null=False)
     price = models.FloatField(null=False)
-    address = models.TextField(null=False)
+    geo_point = models.ForeignKey(GeoPoint, null=False, on_delete=models.CASCADE)
     date = models.DateField(null=True)
     time = models.TimeField(null=True)
     row = models.IntegerField(null=True, blank=True)
