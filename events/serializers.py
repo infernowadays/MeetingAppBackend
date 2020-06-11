@@ -27,11 +27,12 @@ class EventSerializer(ModelSerializer):
     def create(self, validated_data):
         geo_point_validated = validated_data.pop('geo_point')
         geo_point = GeoPoint.objects.create(**geo_point_validated)
+        categories = validated_data.pop('categories')
+
         event = Event.objects.create(geo_point=geo_point, **validated_data)
 
-        categories = validated_data.pop('categories')
         if categories is not None:
-            set_event_categories(categories, instance)
+            set_event_categories(categories, event)
 
         return event
 
