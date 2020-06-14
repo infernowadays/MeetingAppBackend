@@ -1,7 +1,6 @@
 from django.http import Http404
 from django.http import JsonResponse
 from firebase_admin import messaging
-from pyfcm import FCMNotification
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -10,7 +9,6 @@ from rest_framework.views import APIView
 
 from common.utils import *
 from realtime.messaging import send_event_request, send_event_response_request
-from token_auth.serializers import UserProfileSerializer
 from .models import *
 from .serializers import EventSerializer, RequestSerializer
 
@@ -46,14 +44,8 @@ class EventListView(APIView):
     def post(self, request):
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
-            categories = request.data.get('categories')
-            if categories is not None:
-                event = serializer.save(creator=self.request.user, categories=categories)
-            else:
-                event = serializer.save(creator=self.request.user)
-
+            event = serializer.save(creator=self.request.user, categories=request.data.get('categories'))
             event.members.add(request.user)
-
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -88,11 +80,7 @@ class EventDetailView(APIView):
         event = self.get_object(pk)
         serializer = EventSerializer(event, data=request.data, partial=True)
         if serializer.is_valid():
-            categories = request.data.get('categories')
-            if categories is not None:
-                serializer.save(categories=categories)
-            else:
-                serializer.save()
+            serializer.save(categories=request.data.get('categories'))
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

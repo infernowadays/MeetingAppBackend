@@ -2,6 +2,7 @@ from django.db.models import Q
 
 from events.models import Request, EventCategories
 from tickets.models import TicketCategories
+from token_auth.models import UserProfileCategories
 from .models import *
 
 
@@ -55,6 +56,14 @@ def set_ticket_categories(categories, instance):
         category = SubCategory.objects.filter(name=string_category.get('name'))
         category = category.get()
         TicketCategories.objects.create(ticket=instance, category=category)
+
+
+def set_user_profile_categories(categories, instance):
+    UserProfileCategories.objects.filter(user_profile=instance.id).delete()
+    for string_category in categories:
+        category = SubCategory.objects.filter(name=string_category.get('name'))
+        category = category.get()
+        UserProfileCategories.objects.create(user_profile=instance, category=category)
 
 
 def set_geo_point(geo_point, validated_data):

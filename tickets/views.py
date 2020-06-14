@@ -19,11 +19,7 @@ class TicketListView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            categories = request.data.get('categories')
-            if categories is not None:
-                serializer.save(creator=self.request.user, categories=categories)
-            else:
-                serializer.save(creator=self.request.user)
+            serializer.save(creator=self.request.user, categories=request.data.get('categories'))
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -59,11 +55,7 @@ class TicketDetailView(APIView):
         ticket = self.get_object(pk)
         serializer = TicketSerializer(ticket, data=request.data, partial=True)
         if serializer.is_valid():
-            categories = request.data.get('categories')
-            if categories is not None:
-                serializer.save(creator=self.request.user, categories=categories)
-            else:
-                serializer.save(creator=self.request.user)
+            serializer.save(creator=self.request.user, categories=request.data.get('categories'))
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

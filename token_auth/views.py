@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.http import Http404
-from rest_framework import status
 from rest_framework import serializers
+from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
@@ -119,8 +119,7 @@ class MyProfileView(APIView):
     def put(self, request):
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
-            # categories = request.data.get('categories')
-            serializer.save()
+            serializer.save(categories=request.data.get('categories'))
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
