@@ -58,8 +58,6 @@ services:
 
   nginx:
     image: nginx:alpine
-    depends_on:
-      - app
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - /www/data/:/www/data/
