@@ -64,6 +64,7 @@ services:
       - app
     volumes:
       - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - /www/data/:/www/data/
     ports:
       - 443:443
       - 80:80
