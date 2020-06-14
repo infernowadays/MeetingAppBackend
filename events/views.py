@@ -20,37 +20,7 @@ class PushView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def get(self, request):
-        # init_app()
-        api_key = ''
-        push_service = FCMNotification(api_key=api_key)
-
-        # OR initialize with proxies
-
-        proxy_dict = {
-            "http": "http://127.0.0.1",
-            "https": "http://127.0.0.1",
-        }
-        push_service = FCMNotification(api_key=api_key, proxy_dict=proxy_dict)
-
-        token = ''
-        registration_id = token
-        message_title = "Uber update"
-        message_body = "Hi john, your customized news for today is ready"
-        # response = push_service.notify_single_device(registration_id=registration_id, message_title=message_title,
-        #                                              message_body=message_body)
-
-        # [START send_to_topic]
-        # The topic name can be optionally prefixed with "/topics/".
-        topic = 'general'
-        # See documentation on defining a message payload.
-
-        # message = messaging.Message(
-        #     data={
-        #         'title': '1234',
-        #         'body': 'test',
-        #     },
-        #     token=token,
-        # )
+        token = 'c_jNNHPyT0y7_3ptlC3yJn:APA91bG_VOKZrsJoWstZYBjnKxsHaA_rnK77IADYpvk6Ycg7Y70bT-yAVDfX5hgLAV06ELNDXM4ePqbq5yuBT-MLrZiLKHYjqRRywjya9E1XjyAL5bJXq-t9QWLmURqg40IIDyCGmVV_'
 
         message = messaging.Message(
             android=messaging.AndroidConfig(
@@ -63,15 +33,8 @@ class PushView(APIView):
             token=token,
         )
 
-        # response = push_service.notify_topic_subscribers(topic_name='general', message_body='qq gggggg')
-
-        # Send a message to the devices subscribed to the provided topic.
         response = messaging.send(message)
         return JsonResponse({'response': response}, status=200, safe=False)
-
-        # Response is a message ID string.
-        # print('Successfully sent message:', response)
-        # [END send_to_topic]
 
 
 class EventListView(APIView):

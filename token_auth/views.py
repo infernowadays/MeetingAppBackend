@@ -119,7 +119,8 @@ class MyProfileView(APIView):
     def put(self, request):
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save(categories=request.data.get('categories'))
+            # categories = request.data.get('categories')
+            serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

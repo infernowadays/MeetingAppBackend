@@ -12,6 +12,6 @@ urlpatterns = [
     path('requests/', csrf_exempt(RequestListView.as_view())),
     path('requests/<int:pk>/', csrf_exempt(RespondRequestView.as_view())),
 
-    path('push', csrf_exempt(PushView.as_view())),
+    path('push/', csrf_exempt(PushView.as_view())),
 
 ]

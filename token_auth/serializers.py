@@ -60,26 +60,25 @@ class UserProfileSerializer(DynamicFieldsModelSerializer):
         profile = UserProfile.objects.create_user(**validated_data)
         return profile
 
-    def update(self, instance, validated_data):
-        categories = validated_data.pop('categories')
-
-        UserProfileCategories.objects.filter(user_profile=instance.id).delete()
-        for string_category in categories:
-            category = SubCategory.objects.filter(name=string_category.get('name'))
-            if not category:
-                category = SubCategory.objects.create(name=string_category.get('name'), parent_category_id='4')
-            else:
-                category = category.get()
-            UserProfileCategories.objects.create(user_profile=instance, category=category)
-
-        instance.city = validated_data.get('city', instance.city)
-        instance.job = validated_data.get('job', instance.job)
-        instance.education = validated_data.get('education', instance.education)
-        instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
-        instance.sex = validated_data.get('sex', instance.sex)
-
-        instance.is_filled = validated_data.get('is_filled', instance.is_filled)
-
-        instance.save()
-
-        return instance
+    # def update(self, instance, validated_data):
+    #     categories = validated_data.pop('categories')
+    #
+    #     UserProfileCategories.objects.filter(user_profile=instance.id).delete()
+    #     if categories is not None:
+    #         for string_category in categories:
+    #             category = SubCategory.objects.filter(name=string_category.get('name'))
+    #             if not category:
+    #                 category = SubCategory.objects.create(name=string_category.get('name'), parent_category_id='4')
+    #             else:
+    #                 category = category.get()
+    #             UserProfileCategories.objects.create(user_profile=instance, category=category)
+    #
+    #     instance.city = validated_data.get('city', instance.city)
+    #     instance.job = validated_data.get('job', instance.job)
+    #     instance.education = validated_data.get('education', instance.education)
+    #     instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
+    #     instance.sex = validated_data.get('sex', instance.sex)
+    #     instance.is_filled = validated_data.get('is_filled', instance.is_filled)
+    #     instance.save()
+    #
+    #     return instance
