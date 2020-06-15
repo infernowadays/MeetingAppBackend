@@ -31,14 +31,15 @@ class CheckConfirmationCodeView(APIView):
         if code == confirmation[len(confirmation) - 1].code:
             user_profile.update(is_confirmed=True)
             return Response({}, status=status.HTTP_202_ACCEPTED)
-        return Response(serializer.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+        return Response({}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
 
 class GenerateConfirmationView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
-    def send_email(self, to_email, code):
+    @staticmethod
+    def send_email(to_email, code):
         mail_subject = 'Активция аккаунта WALK'
         message = 'Код активации: ' + str(code)
 
@@ -54,5 +55,5 @@ class GenerateConfirmationView(APIView):
 
             self.send_email(to_email=serializer.data.get('email'), code=serializer.data.get('code'))
 
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response({}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
