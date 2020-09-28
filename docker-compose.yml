@@ -20,6 +20,8 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - DEBUG=0
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
 
   django-channels-worker:
     build:
@@ -40,6 +42,9 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=6379
       - DEBUG=0
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+
     command: python manage.py runworker realtime-event-sender
 
   pg:
