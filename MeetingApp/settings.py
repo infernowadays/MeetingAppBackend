@@ -235,8 +235,8 @@ LOGGING = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST_USER = 'noreplywalkapp@gmail.com'# env('EMAIL_HOST_USER', default='default_email_host_user')
+EMAIL_HOST_USER = env('EMAIL_HOST_USER') #, default='default_email_host_user') #'noreplywalkapp@gmail.com'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_PASSWORD = 'qkmjyczegghoiwjm' #env('EMAIL_HOST_PASSWORD', default='default_email_host_password')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD') #, default='default_email_host_password') # 'qkmjyczegghoiwjm'
