@@ -87,7 +87,9 @@ def send_firebase_push(sender, message, token):
         token=token,
         data={
             'sender': str(sender),
-            'message': str(message.get('text'))
+            'message': str(message.get('text')),
+            'chat_id': str(message.get('event'))
+
         }
     )
 
