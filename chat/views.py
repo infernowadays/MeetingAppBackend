@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from realtime.messaging import send_message, send_private_message
+from realtime.messaging import send_message, send_private_message, send_firebase_push
 from .models import *
 from .serializers import *
 
@@ -56,6 +56,8 @@ class MessageView(APIView):
             # members_ids.
 
             self.send_websocket(serializer.data.get('id'), members_ids)
+            for member_id in members_ids:
+                send_firebase_push(request.user.first_name + ' ' + request.user.last_name, request.data, UserProfile.objects.get(pk=member_id).firebase_uid)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

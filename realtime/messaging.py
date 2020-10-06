@@ -1,5 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
+from firebase_admin import messaging
 
 from token_auth.serializers import UserProfile, UserProfileSerializer
 from .events import *
@@ -79,3 +80,15 @@ def _send_realtime_event_to_user(to_user_ids, realtime_event):
             'realtime_event_dict': realtime_event.properties_dict,
         }
     )
+
+
+def send_firebase_push(sender, message, token):
+    message = messaging.Message(
+        token=token,
+        data={
+            'sender': str(sender),
+            'message': str(message.get('text'))
+        }
+    )
+
+    messaging.send(message)

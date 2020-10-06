@@ -129,11 +129,5 @@ class FirebaseTokenView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def put(self, request):
-        key = request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
-        Token.objects.filter(key=key).update(key=request.data["key"])
-        try:
-            token = Token.objects.get(key=request.data["key"])
-        except Token.DoesNotExist:
-            raise Http404
-
-        return Response({"key": token.key}, status=status.HTTP_200_OK)
+        UserProfile.objects.filter(pk=request.user.pk).update(firebase_uid=request.data)
+        return Response({"status": "ok"}, status=status.HTTP_200_OK)
