@@ -1,6 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from firebase_admin import messaging
+from firebase_admin import messaging, auth
 
 from token_auth.serializers import UserProfile, UserProfileSerializer
 from .events import *
@@ -93,4 +93,8 @@ def send_firebase_push(sender, message, token):
         }
     )
 
-    messaging.send(message)
+    try:
+        auth.verify_id_token(token)
+        messaging.send(message)
+    except ValueError:
+        pass
