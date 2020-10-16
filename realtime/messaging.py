@@ -96,5 +96,5 @@ def send_firebase_push(sender, message, token):
     try:
         auth.verify_id_token(token)
         messaging.send(message)
-    except ValueError:
+    except auth.InvalidIdTokenError:
         pass
