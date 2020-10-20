@@ -1,9 +1,10 @@
 from rest_framework.authtoken.models import Token
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, Serializer
 
 from common.serializers import SubCategorySerializer
 from common.utils import set_user_profile_categories
 from .models import UserProfile, ProfilePhoto
+from rest_framework import serializers
 
 
 class DynamicFieldsModelSerializer(ModelSerializer):
