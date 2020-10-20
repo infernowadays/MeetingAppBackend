@@ -23,12 +23,6 @@ class SignUpView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# TODO: move to serializers
-class AuthCredentialsSerializers(Serializer):
-    email = serializers.EmailField(required=True)
-    password = serializers.CharField(required=True)
-
-
 class LoginView(APIView):
     permission_classes = (AllowAny,)
 

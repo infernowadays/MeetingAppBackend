@@ -74,3 +74,8 @@ class UserProfileSerializer(DynamicFieldsModelSerializer):
         instance.save()
 
         return instance
+
+
+class AuthCredentialsSerializers(Serializer):
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True)
