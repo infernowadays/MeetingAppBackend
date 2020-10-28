@@ -1,6 +1,6 @@
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
-from firebase_admin import messaging, auth
+from firebase_admin import messaging, exceptions
 
 from token_auth.serializers import UserProfile, UserProfileSerializer
 from .events import *
@@ -82,19 +82,22 @@ def _send_realtime_event_to_user(to_user_ids, realtime_event):
     )
 
 
-def send_firebase_push(sender, message, token):
+def send_firebase_push(title, message, content_type, content_id, to_user_token):
     message = messaging.Message(
-        token=token,
+        token=to_user_token,
         data={
-            'sender': str(sender),
-            'message': str(message.get('text')),
-            'chat_id': str(message.get('event'))
-
+            'title': str(title),
+            'message': str(message),
+            'content_type': str(content_type),
+            'content_id': str(content_id)
         }
+
+        #     sender <<<< -------------------------------------------------------
+        #     chat_id <<<< -------------------------------------------------------
+        # str(message.get('event'))
     )
 
     try:
-        auth.verify_id_token(token)
         messaging.send(message)
-    except auth.InvalidIdTokenError:
+    except exceptions.InvalidArgumentError:
         pass

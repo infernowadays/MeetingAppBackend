@@ -1,3 +1,5 @@
+from abc import ABC
+
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer, StringRelatedField
 from .models import Message, PrivateMessage
@@ -25,7 +27,16 @@ class MessageSerializer(ModelSerializer):
 class PrivateMessageSerializer(ModelSerializer):
     from_user = UserProfileSerializer(read_only=True)
     user = UserProfileSerializer(read_only=True)
+    ticket = serializers.IntegerField(source='ticket.id', read_only=True)
 
     class Meta:
         model = PrivateMessage
         fields = '__all__'
+
+
+class ChatSerializer(serializers.Serializer):
+    content_type = serializers.CharField()
+    content_id = serializers.IntegerField()
+    title = serializers.CharField()
+    from_user = UserProfileSerializer(read_only=True)
+    last_message = serializers.CharField()

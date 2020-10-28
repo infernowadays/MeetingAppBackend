@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from common.utils import *
-from realtime.messaging import send_event_request, send_event_response_request
+from realtime.messaging import send_event_request, send_event_response_request, send_firebase_push
 from .models import *
 from .serializers import EventSerializer, RequestSerializer
 
@@ -117,6 +117,14 @@ class RequestListView(APIView):
 
             self.send_websocket(serializer.data.get('id'))
 
+            send_firebase_push(
+                title='Новая заявка!',
+                message=request.user.first_name + ' ' + request.user.last_name + ' хочет вступить в ваше событие',
+                content_type='REQUEST',
+                content_id=event.id,
+                to_user_token=UserProfile.objects.get(pk=to_user.id).firebase_uid
+            )
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -150,14 +158,23 @@ class RespondRequestView(APIView):
         if serializer.is_valid():
             serializer.save()
 
+            decision = ' отклонил Вашу заявку :('
+            event = Event.objects.get(id=serializer.data.get('event'))
+            user = UserProfile.objects.get(id=serializer.data.get('from_user').get('id'))
+
             if serializer.data.get('decision') == Decision.ACCEPT.value:
-                event = Event.objects.get(id=serializer.data.get('event'))
-                user = UserProfile.objects.get(id=serializer.data.get('from_user').get('id'))
                 event.members.add(user)
-            # elif serializer.data.get('decision') == Decision.DECLINE.value:
-            #     event_request.delete()
+                decision = ' одобрил Вашу заявку :)'
 
             self.send_websocket(serializer.data.get('id'))
+
+            send_firebase_push(
+                title='Ваша заявка была рассмотрена!',
+                message=request.user.first_name + ' ' + request.user.last_name + decision,
+                content_type='REQUEST',
+                content_id=event.id,
+                to_user_token=UserProfile.objects.get(pk=user.id).firebase_uid
+            )
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

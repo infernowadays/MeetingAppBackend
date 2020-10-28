@@ -93,7 +93,7 @@ class MessageEvent:
 
 class PrivateMessageEvent:
     def __init__(self, from_user, user, text, created):
-        self._type = "send_consumer_event_to_client"
+        self._type = "private_message_event"
         self._from_user = from_user
         self._user = user
         self._text = text

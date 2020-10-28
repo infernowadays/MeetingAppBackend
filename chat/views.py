@@ -20,7 +20,48 @@ class ChatsView(APIView):
         creator_events = request.user.creator_events.all()
         events = set(members_events | creator_events)
 
-        serializer = EventSerializer(instance=events, many=True)
+        chats = list([])
+        # messages from events
+        for event in events:
+            try:
+                last_message = Message.objects.filter(event_id=event.id).order_by("-id")[0].text
+            except IndexError:
+                last_message = ''
+
+            chat = dict({})
+            chat['content_type'] = 'message'
+            chat['content_id'] = event.id
+            chat['title'] = event.description
+            chat['from_user'] = event.creator
+            chat['last_message'] = last_message
+
+            chats.append(chat)
+
+        # private messages
+
+        # q = Q(Q(from_user=request.user) | Q(user=request.user))
+        # private_messages = PrivateMessage.objects.filter(q).distinct('from_user', 'user')
+        #
+        # for private_message in private_messages:
+        #     try:
+        #
+        #         q = Q(Q(from_user=private_message.from_user) & Q(user=private_message.user)) | Q(
+        #             Q(from_user=private_message.user) & Q(user=private_message.from_user))
+        #
+        #         last_message = PrivateMessage.objects.filter(q).order_by("-id")[0].text
+        #     except IndexError:
+        #         last_message = ''
+        #
+        #     chat = dict({})
+        #     chat['content_type'] = 'private_message'
+        #     chat['content_id'] = private_message.ticket.id
+        #     chat['title'] = private_message.ticket.name
+        #     chat['from_user'] = private_message.user
+        #     chat['last_message'] = last_message
+        #
+        #     chats.append(chat)
+
+        serializer = ChatSerializer(instance=chats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -53,11 +94,15 @@ class MessageView(APIView):
                 .filter(~Q(id=request.user.id)) \
                 .values_list('id', flat=True)
 
-            # members_ids.
-
             self.send_websocket(serializer.data.get('id'), members_ids)
             for member_id in members_ids:
-                send_firebase_push(request.user.first_name + ' ' + request.user.last_name, request.data, UserProfile.objects.get(pk=member_id).firebase_uid)
+                send_firebase_push(
+                    title=request.user.first_name + ' ' + request.user.last_name,
+                    message=request.data.get('text'),
+                    content_type='MESSAGE',
+                    content_id=request.data.get('event'),
+                    to_user_token=UserProfile.objects.get(pk=member_id).firebase_uid
+                )
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -94,10 +139,13 @@ class PrivateMessageView(APIView):
             serializer.save(from_user=request.user, user=user)
 
             members_ids = list([])
-            members_ids.append(request.user.id)
             members_ids.append(user.id)
 
             self.send_websocket(serializer.data.get('id'), members_ids)
+
+            send_firebase_push(request.user.first_name + ' ' + request.user.last_name, request.data.text,
+                               'private_message', request.data.ticket.id,
+                               UserProfile.objects.get(pk=user.id).firebase_uid)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -107,7 +155,7 @@ class PrivateMessageView(APIView):
 
         q = Q(Q(from_user=request.user) & Q(user=user)) | Q(Q(from_user=user) & Q(user=request.user))
 
-        messages = PrivateMessage.objects.filter(q)
+        messages = PrivateMessage.objects.filter(q).order_by('created')
         serializer = PrivateMessageSerializer(instance=messages, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)

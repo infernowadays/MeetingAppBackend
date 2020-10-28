@@ -46,6 +46,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
             event=message
         )
 
+    async def private_message_event(self, message):
+        await self._send_consumer_event_to_client(
+            event=message
+        )
+
     # The following is called by the CONSUMER to send the message to the CLIENT
     async def _send_consumer_event_to_client(self, event):
         await self.send(text_data=json.dumps(event))
