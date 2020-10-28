@@ -25,8 +25,8 @@ class PrivateMessage(models.Model):
     text = models.TextField(null=False, max_length=512)
     created = models.DateTimeField(auto_now=True)
     seen = models.BooleanField(default=False)
-    ticket = models.ForeignKey(Ticket, null=False, db_constraint=True, on_delete=models.CASCADE,
-                               related_name='messages')
+    # ticket = models.ForeignKey(Ticket, null=False, db_constraint=True, on_delete=models.CASCADE,
+    #                            related_name='messages')
 
     class Meta:
         db_table = 'private_message'
