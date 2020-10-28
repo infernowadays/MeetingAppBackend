@@ -37,30 +37,6 @@ class ChatsView(APIView):
 
             chats.append(chat)
 
-        # private messages
-
-        # q = Q(Q(from_user=request.user) | Q(user=request.user))
-        # private_messages = PrivateMessage.objects.filter(q).distinct('from_user', 'user')
-        #
-        # for private_message in private_messages:
-        #     try:
-        #
-        #         q = Q(Q(from_user=private_message.from_user) & Q(user=private_message.user)) | Q(
-        #             Q(from_user=private_message.user) & Q(user=private_message.from_user))
-        #
-        #         last_message = PrivateMessage.objects.filter(q).order_by("-id")[0].text
-        #     except IndexError:
-        #         last_message = ''
-        #
-        #     chat = dict({})
-        #     chat['content_type'] = 'private_message'
-        #     chat['content_id'] = private_message.ticket.id
-        #     chat['title'] = private_message.ticket.name
-        #     chat['from_user'] = private_message.user
-        #     chat['last_message'] = last_message
-        #
-        #     chats.append(chat)
-
         serializer = ChatSerializer(instance=chats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

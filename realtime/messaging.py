@@ -91,13 +91,9 @@ def send_firebase_push(title, message, content_type, content_id, to_user_token):
             'content_type': str(content_type),
             'content_id': str(content_id)
         }
-
-        #     sender <<<< -------------------------------------------------------
-        #     chat_id <<<< -------------------------------------------------------
-        # str(message.get('event'))
     )
 
     try:
         messaging.send(message)
-    except exceptions.InvalidArgumentError:
+    except (exceptions.InvalidArgumentError, exceptions.NotFoundError):
         pass
