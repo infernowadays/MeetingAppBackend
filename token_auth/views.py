@@ -149,6 +149,10 @@ class MyProfileView(APIView):
         new_messages_count = 0
 
         for i in range(len(events_ids)):
+
+            print(events_ids[i])
+            print(last_seen_message_ids[i])
+
             new_messages_count += Message.objects.filter(
                 Q(event_id=events_ids[i]) & ~Q(from_user=self.request.user) & Q(
                     id__gt=last_seen_message_ids[i])).count()
