@@ -112,17 +112,17 @@ class MyProfileView(APIView):
 
         serializer_data = serializer.data
 
-        if request.GET.get('last_seen_message_id') is None and request.GET.get('last_seen_request_id') is None:
+        if request.GET.get('last_seen_message_ids') is None and request.GET.get('last_seen_request_id') is None:
             serializer_data['new_requests_count'] = 0
             serializer_data['new_messages_count'] = 0
 
             return Response(serializer_data, status=status.HTTP_200_OK)
 
-        last_seen_message_id = -1
+        last_seen_message_ids = list([])
         last_seen_request_id = -1
 
-        if request.GET.get('last_seen_message_id') is not None:
-            last_seen_message_id = request.GET.get('last_seen_message_id')
+        if request.GET.get('last_seen_message_ids') is not None:
+            last_seen_message_ids = request.GET.get('last_seen_message_ids').split(',')
 
         if request.GET.get('last_seen_request_id') is not None:
             last_seen_request_id = request.GET.get('last_seen_request_id')
@@ -137,11 +137,17 @@ class MyProfileView(APIView):
         new_requests_count = Request.objects.filter(q_not_seen_requests_for_user).count()
         serializer_data['new_requests_count'] = new_requests_count
 
-        events_ids = Event.objects.filter(Q(creator=self.request.user) | Q(members=self.request.user)). \
-            values_list('id', flat=True)
+        events_ids = Event.objects.filter(
+            (Q(creator=self.request.user) | Q(members=self.request.user))).values_list('id', flat=True).order_by('id')[
+                     :len(last_seen_message_ids)]
 
-        new_messages_count = Message.objects.filter(
-            Q(event_id__in=events_ids) & ~Q(from_user=self.request.user) & Q(id__gt=last_seen_message_id)).count()
+        new_messages_count = 0
+
+        for i in range(len(events_ids)):
+            new_messages_count += Message.objects.filter(
+                Q(event_id=events_ids[i]) & ~Q(from_user=self.request.user) & Q(
+                    id__gt=last_seen_message_ids[i])).count()
+
         serializer_data['new_messages_count'] = new_messages_count
 
         return Response(serializer_data, status=status.HTTP_200_OK)
