@@ -139,10 +139,11 @@ class MyProfileView(APIView):
         serializer_data['new_requests_count'] = new_requests_count
 
         events_ids = Event.objects.filter(
-            (Q(creator=self.request.user) | Q(members=self.request.user))).values_list('id', flat=True).order_by('id')[
+            Q(creator=self.request.user) | Q(members=self.request.user)).values_list('id', flat=True).order_by('id')[
                      :len(last_seen_message_ids)]
 
         print(events_ids)
+        print('what is going on')
         new_messages_count = 0
 
         for i in range(len(events_ids)):
