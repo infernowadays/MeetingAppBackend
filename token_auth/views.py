@@ -1,14 +1,16 @@
 from django.contrib.auth import authenticate
+from django.db.models import Q
 from django.http import Http404
-from rest_framework import serializers
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import AllowAny
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
 from rest_framework.views import APIView
 
+from chat.models import Message
+from events.enums import Decision
+from events.models import Request, Event
 from .serializers import *
 
 
@@ -105,10 +107,41 @@ class MyProfileView(APIView):
 
         return Response({'token': token.key})
 
-    @staticmethod
-    def get(request):
-        serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    def get(self, request):
+        serializer = UserProfileSerializer(self.request.user)
+
+        if request.GET.get('last_seen_message_id') is None and request.GET.get('last_seen_request_id') is None:
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        last_seen_message_id = -1
+        last_seen_request_id = -1
+
+        if request.GET.get('last_seen_message_id') is not None:
+            last_seen_message_id = request.GET.get('last_seen_message_id')
+
+        if request.GET.get('last_seen_request_id') is not None:
+            last_seen_request_id = request.GET.get('last_seen_request_id')
+
+        serializer_data = serializer.data
+
+        q_accepted_and_declined = Q() | Q(decision=Decision.ACCEPT.value) | Q(decision=Decision.DECLINE.value)
+        q_accepted_and_declined_for_sender = q_accepted_and_declined & Q(from_user=self.request.user)
+        q_not_answered_for_receiver = Q() | Q(decision=Decision.NO_ANSWER.value) & Q(to_user=self.request.user)
+        q_not_seen_requests = Q(id__gt=last_seen_request_id)
+        q_not_seen_requests_for_user = (q_accepted_and_declined_for_sender | q_not_answered_for_receiver) \
+                                       & q_not_seen_requests
+
+        new_requests_count = Request.objects.filter(q_not_seen_requests_for_user).count()
+        serializer_data['new_requests_count'] = new_requests_count
+
+        events_ids = Event.objects.filter(Q(creator=self.request.user) | Q(members=self.request.user)). \
+            values_list('id', flat=True)
+
+        new_messages_count = Message.objects.filter(
+            Q(event_id__in=events_ids) & ~Q(from_user=self.request.user) & Q(id__gt=last_seen_message_id)).count()
+        serializer_data['new_messages_count'] = new_messages_count
+
+        return Response(serializer_data, status=status.HTTP_200_OK)
 
     def put(self, request):
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
