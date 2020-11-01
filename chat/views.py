@@ -33,8 +33,13 @@ class ChatsView(APIView):
             chat['content_id'] = event.id
             chat['title'] = event.description
             chat['from_user'] = event.creator
-            chat['last_message'] = last_message.text
-            chat['last_message_id'] = last_message.id
+
+            if last_message == '':
+                chat['last_message'] = ''
+                chat['last_message_id'] = -1
+            else:
+                chat['last_message'] = last_message.text
+                chat['last_message_id'] = last_message.id
 
             chats.append(chat)
 
