@@ -24,7 +24,7 @@ class ChatsView(APIView):
         # messages from events
         for event in events:
             try:
-                last_message = Message.objects.filter(event_id=event.id).order_by("-id")[0].text
+                last_message = Message.objects.filter(event_id=event.id).order_by("-id")[0]
             except IndexError:
                 last_message = ''
 
@@ -33,7 +33,8 @@ class ChatsView(APIView):
             chat['content_id'] = event.id
             chat['title'] = event.description
             chat['from_user'] = event.creator
-            chat['last_message'] = last_message
+            chat['last_message'] = last_message.text
+            chat['last_message_id'] = last_message.id
 
             chats.append(chat)
 
