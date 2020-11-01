@@ -123,6 +123,7 @@ class MyProfileView(APIView):
 
         if request.GET.get('last_seen_message_ids') is not None:
             last_seen_message_ids = request.GET.get('last_seen_message_ids').split(',')
+            last_seen_message_ids.pop()
 
         if request.GET.get('last_seen_request_id') is not None:
             last_seen_request_id = request.GET.get('last_seen_request_id')

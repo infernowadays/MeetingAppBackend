@@ -46,14 +46,15 @@ class UserProfileSerializer(DynamicFieldsModelSerializer):
 
     def to_representation(self, obj):
         profile = super(UserProfileSerializer, self).to_representation(obj)
-        profile.pop('password')
-        profile.pop('is_active')
-        profile.pop('is_admin')
-        profile.pop('is_staff')
-        profile.pop('is_superuser')
-        profile.pop('last_login')
-        profile.pop('user_permissions')
-        profile.pop('groups')
+        if profile.get('password') is not None:
+            profile.pop('password')
+            profile.pop('is_active')
+            profile.pop('is_admin')
+            profile.pop('is_staff')
+            profile.pop('is_superuser')
+            profile.pop('last_login')
+            profile.pop('user_permissions')
+            profile.pop('groups')
         # profile.pop('vk_token')
         return profile
 
