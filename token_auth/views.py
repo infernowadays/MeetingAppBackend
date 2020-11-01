@@ -110,8 +110,13 @@ class MyProfileView(APIView):
     def get(self, request):
         serializer = UserProfileSerializer(self.request.user)
 
+        serializer_data = serializer.data
+
         if request.GET.get('last_seen_message_id') is None and request.GET.get('last_seen_request_id') is None:
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer_data['new_requests_count'] = 0
+            serializer_data['new_messages_count'] = 0
+
+            return Response(serializer_data, status=status.HTTP_200_OK)
 
         last_seen_message_id = -1
         last_seen_request_id = -1
@@ -121,8 +126,6 @@ class MyProfileView(APIView):
 
         if request.GET.get('last_seen_request_id') is not None:
             last_seen_request_id = request.GET.get('last_seen_request_id')
-
-        serializer_data = serializer.data
 
         q_accepted_and_declined = Q() | Q(decision=Decision.ACCEPT.value) | Q(decision=Decision.DECLINE.value)
         q_accepted_and_declined_for_sender = q_accepted_and_declined & Q(from_user=self.request.user)
