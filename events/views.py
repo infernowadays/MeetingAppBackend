@@ -52,7 +52,7 @@ class EventListView(APIView):
     def get(self, request):
         q = Q() | filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
         q = q & not_requested_events(queryset=self.queryset, user=request.user)
-        # q = q & filter_by_categories(request.GET.getlist('category'))
+        q = q & filter_by_categories(request.GET.getlist('category'))
 
         events = self.queryset.filter(q).distinct().order_by('-id')
         serializer = self.serializer_class(instance=events, many=True)

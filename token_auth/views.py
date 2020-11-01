@@ -143,6 +143,8 @@ class MyProfileView(APIView):
                      :len(last_seen_message_ids)]
 
         print(events_ids)
+        print(last_seen_message_ids)
+        print(self.request.user)
         print('what is going on')
         new_messages_count = 0
 
