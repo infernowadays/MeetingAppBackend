@@ -54,7 +54,7 @@ class UserProfileSerializer(DynamicFieldsModelSerializer):
         profile.pop('last_login')
         profile.pop('user_permissions')
         profile.pop('groups')
-        profile.pop('vk_token')
+        # profile.pop('vk_token')
         return profile
 
     def create(self, validated_data):
