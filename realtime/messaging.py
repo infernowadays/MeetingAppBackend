@@ -52,6 +52,7 @@ def send_message(message, members_ids):
         to_user_ids=members_ids,
         realtime_event=MessageEvent(
             from_user=from_user,
+            id=message.id,
             text=message.text,
             created=message.created,
             event=message.event.id,
