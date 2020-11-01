@@ -142,6 +142,7 @@ class MyProfileView(APIView):
             (Q(creator=self.request.user) | Q(members=self.request.user))).values_list('id', flat=True).order_by('id')[
                      :len(last_seen_message_ids)]
 
+        print(events_ids)
         new_messages_count = 0
 
         for i in range(len(events_ids)):
