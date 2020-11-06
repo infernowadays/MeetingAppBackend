@@ -1,6 +1,4 @@
 from django.http import Http404
-from django.http import JsonResponse
-from firebase_admin import messaging
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -11,28 +9,6 @@ from common.utils import *
 from realtime.messaging import send_event_request, send_event_response_request, send_firebase_push
 from .models import *
 from .serializers import EventSerializer, RequestSerializer
-
-
-class PushView(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
-
-    def get(self, request):
-        token = 'c_jNNHPyT0y7_3ptlC3yJn:APA91bG_VOKZrsJoWstZYBjnKxsHaA_rnK77IADYpvk6Ycg7Y70bT-yAVDfX5hgLAV06ELNDXM4ePqbq5yuBT-MLrZiLKHYjqRRywjya9E1XjyAL5bJXq-t9QWLmURqg40IIDyCGmVV_'
-
-        message = messaging.Message(
-            android=messaging.AndroidConfig(
-                priority='normal',
-                notification=messaging.AndroidNotification(
-                    title='title',
-                    body='body',
-                ),
-            ),
-            token=token,
-        )
-
-        response = messaging.send(message)
-        return JsonResponse({'response': response}, status=200, safe=False)
 
 
 class EventListView(APIView):
@@ -50,8 +26,22 @@ class EventListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request):
-        q = Q() | filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
-        q = q & not_requested_events(queryset=self.queryset, user=request.user)
+        q = Q()
+        if request.GET.getlist('me') is not None and request.GET.getlist('me') != []:
+            q = q & filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
+
+        if request.GET.get('requested') is not None and request.GET.get('requested') != '':
+            if request.GET.get('requested') == 'true':
+                q = q | requested_events(user=request.user)
+            elif request.GET.get('requested') == 'false':
+                q = q | ~requested_events(user=request.user)
+
+        if request.GET.get('ended') is not None and request.GET.get('ended') != '':
+            if request.GET.get('ended') == 'true':
+                q = q & ended_events(queryset=self.queryset, user=request.user)
+            elif request.GET.get('ended') == 'false':
+                q = q & not_ended_events(queryset=self.queryset, user=request.user)
+
         q = q & filter_by_categories(request.GET.getlist('category'))
 
         events = self.queryset.filter(q).distinct().order_by('-id')
@@ -154,6 +144,8 @@ class RespondRequestView(APIView):
 
     def put(self, request, pk):
         event_request = self.get_object(pk)
+        Request.objects.filter(pk=pk).update(seen=True)
+
         serializer = RequestSerializer(event_request, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -178,3 +170,6 @@ class RespondRequestView(APIView):
 
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        Request.objects.filter(pk=pk).delete()

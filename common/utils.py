@@ -1,18 +1,23 @@
 from django.db.models import Q
 
-from events.enums import Decision
 from events.models import Request, EventCategories
 from tickets.models import TicketCategories
 from token_auth.models import UserProfileCategories
 from .models import *
 
 
-def not_requested_events(queryset, user):
-    ids = queryset.values_list('id', flat=True)
-    requested_events = Request.objects.filter(event__in=ids, from_user=user, decision=Decision.NO_ANSWER).values_list(
-        'event', flat=True)
+def requested_events(user):
+    requested_events = Request.objects.filter(from_user=user).values_list('event', flat=True)
 
-    return ~Q(id__in=requested_events)
+    return Q(id__in=requested_events)
+
+
+def ended_events(queryset, user):
+    return Q(ended=True) & (Q(creator=user) | Q(members=user))
+
+
+def not_ended_events(queryset, user):
+    return Q(ended=False) & (Q(creator=user) | Q(members=user))
 
 
 def not_requested_tickets(queryset, user):

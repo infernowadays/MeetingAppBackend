@@ -41,3 +41,4 @@ class ChatSerializer(serializers.Serializer):
     from_user = UserProfileSerializer(read_only=True)
     last_message = serializers.CharField()
     last_message_id = serializers.IntegerField()
+    last_message_created = serializers.CharField()
