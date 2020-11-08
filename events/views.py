@@ -27,20 +27,23 @@ class EventListView(APIView):
 
     def get(self, request):
         q = Q()
-        if request.GET.getlist('me') is not None and request.GET.getlist('me') != []:
-            q = q & filter_by_user_roles(list_roles=request.GET.getlist('me'), user=request.user)
+        if request.GET.get('me') is not None and request.GET.get('me') != '':
+            if request.GET.get('me') == 'part':
+                q = q & taking_part(user=request.user)
+            elif request.GET.get('me') == 'not_part':
+                q = q & not_taking_part(user=request.user)
 
         if request.GET.get('requested') is not None and request.GET.get('requested') != '':
-            if request.GET.get('requested') == 'true':
-                q = q | requested_events(user=request.user)
-            elif request.GET.get('requested') == 'false':
-                q = q | ~requested_events(user=request.user)
+            if request.GET.get('requested') == 'not_answered':
+                q = q | not_answered_requests(user=request.user)
+            elif request.GET.get('requested') == 'not_requested':
+                q = q & not_requested_events(user=request.user)
 
         if request.GET.get('ended') is not None and request.GET.get('ended') != '':
             if request.GET.get('ended') == 'true':
-                q = q & ended_events(queryset=self.queryset, user=request.user)
+                q = q & ended_events()
             elif request.GET.get('ended') == 'false':
-                q = q & not_ended_events(queryset=self.queryset, user=request.user)
+                q = q & ~ended_events()
 
         q = q & filter_by_categories(request.GET.getlist('category'))
 
@@ -144,11 +147,10 @@ class RespondRequestView(APIView):
 
     def put(self, request, pk):
         event_request = self.get_object(pk)
-        Request.objects.filter(pk=pk).update(seen=True)
 
         serializer = RequestSerializer(event_request, data=request.data, partial=True)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(seen=True)
 
             decision = ' отклонил Вашу заявку :('
             event = Event.objects.get(id=serializer.data.get('event'))

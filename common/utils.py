@@ -6,18 +6,20 @@ from token_auth.models import UserProfileCategories
 from .models import *
 
 
-def requested_events(user):
-    requested_events = Request.objects.filter(from_user=user).values_list('event', flat=True)
-
-    return Q(id__in=requested_events)
-
-
-def ended_events(queryset, user):
-    return Q(ended=True) & (Q(creator=user) | Q(members=user))
+def not_answered_requests(user):
+    not_answered_requests_ids = Request.objects.filter(from_user=user, decision="NO_ANSWER").values_list('event',
+                                                                                                         flat=True)
+    return Q(id__in=not_answered_requests_ids)
 
 
-def not_ended_events(queryset, user):
-    return Q(ended=False) & (Q(creator=user) | Q(members=user))
+def not_requested_events(user):
+    not_requested_events_ids = Request.objects.filter(from_user=user).values_list('event', flat=True)
+
+    return ~Q(id__in=not_requested_events_ids)
+
+
+def ended_events():
+    return Q(ended=True)
 
 
 def not_requested_tickets(queryset, user):
@@ -26,19 +28,12 @@ def not_requested_tickets(queryset, user):
     return Q()
 
 
-def filter_by_user_roles(list_roles, user):
-    q = Q()
-    if list_roles:
-        for role in list_roles:
-            if role == 'creator':
-                q = q | Q(creator=user)
-            elif role == 'member':
-                q = q | Q(members=user)
+def taking_part(user):
+    return Q(creator=user) | Q(members=user)
 
-    else:
-        q = Q(~Q(creator=user) & ~Q(members=user))
 
-    return q
+def not_taking_part(user):
+    return ~Q(creator=user) & ~Q(members=user)
 
 
 def filter_by_categories(list_categories):
