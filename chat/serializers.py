@@ -1,10 +1,8 @@
-from abc import ABC
-
 from rest_framework import serializers
-from rest_framework.serializers import ModelSerializer, StringRelatedField
-from .models import Message, PrivateMessage
+from rest_framework.serializers import ModelSerializer
+
 from token_auth.serializers import UserProfileSerializer
-from events.serializers import EventSerializer
+from .models import Message, PrivateMessage
 
 
 class MessageSerializer(ModelSerializer):
@@ -42,3 +40,4 @@ class ChatSerializer(serializers.Serializer):
     last_message = serializers.CharField()
     last_message_id = serializers.IntegerField()
     last_message_created = serializers.CharField()
+    last_message_from_user_name = serializers.CharField()
