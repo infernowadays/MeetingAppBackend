@@ -109,31 +109,23 @@ class MyProfileView(APIView):
 
     def get(self, request):
         serializer = UserProfileSerializer(self.request.user)
-
         serializer_data = serializer.data
 
-        if request.GET.get('last_seen_message_ids') is None and request.GET.get('last_seen_request_id') is None:
-            serializer_data['new_requests_count'] = 0
+        if request.GET.get('last_seen_message_ids') is None:
             serializer_data['new_messages_count'] = 0
 
             return Response(serializer_data, status=status.HTTP_200_OK)
 
         last_seen_message_ids = list([])
-        last_seen_request_id = -1
 
         if request.GET.get('last_seen_message_ids') is not None:
             last_seen_message_ids = request.GET.get('last_seen_message_ids').split(',')
             last_seen_message_ids.pop()
 
-        if request.GET.get('last_seen_request_id') is not None:
-            last_seen_request_id = request.GET.get('last_seen_request_id')
-
         q_accepted_and_declined = Q() | Q(decision=Decision.ACCEPT.value) | Q(decision=Decision.DECLINE.value)
         q_accepted_and_declined_for_sender = q_accepted_and_declined & Q(from_user=self.request.user)
         q_not_answered_for_receiver = Q() | Q(decision=Decision.NO_ANSWER.value) & Q(to_user=self.request.user)
-        q_not_seen_requests = Q(id__gt=last_seen_request_id)
-        q_not_seen_requests_for_user = (q_accepted_and_declined_for_sender | q_not_answered_for_receiver) \
-                                       & q_not_seen_requests
+        q_not_seen_requests_for_user = (q_accepted_and_declined_for_sender | q_not_answered_for_receiver)
 
         new_requests_count = Request.objects.filter(q_not_seen_requests_for_user).count()
         serializer_data['new_requests_count'] = new_requests_count
