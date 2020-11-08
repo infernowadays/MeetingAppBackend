@@ -42,7 +42,7 @@ class ChatsView(APIView):
             else:
                 chat['last_message'] = last_message.text
                 chat['last_message_id'] = last_message.id
-                chat['last_message_created'] = last_message.created
+                chat['last_message_created'] = str(last_message.created).replace(' ', 'T').replace('+00:00', 'Z')
 
             chats.append(chat)
 
