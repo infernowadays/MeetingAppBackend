@@ -16,6 +16,7 @@ class EventListView(APIView):
     authentication_classes = (TokenAuthentication,)
     serializer_class = EventSerializer
     queryset = Event.objects.all()
+    events_to_return_count = 15
 
     def post(self, request):
         serializer = EventSerializer(data=request.data)
@@ -27,6 +28,10 @@ class EventListView(APIView):
 
     def get(self, request):
         q = Q()
+
+        if request.GET.get('last_event_id') is not None and request.GET.get('last_event_id') != '':
+            q = q & Q(id__gt=request.GET.get('last_event_id'))
+
         if request.GET.get('me') is not None and request.GET.get('me') != '':
             if request.GET.get('me') == 'part':
                 q = q & taking_part(user=request.user)
@@ -47,7 +52,7 @@ class EventListView(APIView):
 
         q = q & filter_by_categories(request.GET.getlist('category'))
 
-        events = self.queryset.filter(q).distinct().order_by('-id')
+        events = self.queryset.filter(q).distinct().order_by('-id')[:self.events_to_return_count]
         serializer = self.serializer_class(instance=events, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
