@@ -16,7 +16,7 @@ class EventListView(APIView):
     authentication_classes = (TokenAuthentication,)
     serializer_class = EventSerializer
     queryset = Event.objects.all()
-    offset = 3
+    offset = 15
 
     def post(self, request):
         serializer = EventSerializer(data=request.data)
