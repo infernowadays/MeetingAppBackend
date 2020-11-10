@@ -71,3 +71,4 @@ zope.interface==5.0.2
 django-extensions==2.2.9
 boto3==1.12.39
 botocore==1.15.39
+geopy==2.0.0

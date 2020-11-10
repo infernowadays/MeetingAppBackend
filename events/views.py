@@ -29,6 +29,9 @@ class EventListView(APIView):
     def get(self, request):
         q = Q()
 
+        if request.GET.get('text') is not None and request.GET.get('text') != '':
+            q = q & filter_by_text(request.GET.get('text'))
+
         if request.GET.get('me') is not None and request.GET.get('me') != '':
             if request.GET.get('me') == 'part':
                 q = q & taking_part(user=request.user)
@@ -48,6 +51,10 @@ class EventListView(APIView):
                 q = q & ~ended_events()
 
         q = q & filter_by_categories(request.GET.getlist('category'))
+        q = q & filter_by_text(request.GET.get('text'))
+        q = q & filter_by_age(request.GET.get('from_age'), request.GET.get('to_age'))
+        q = q & filter_by_sex(request.GET.getlist('sex'))
+        q = q & filter_by_geo(request.GET.get('latitude'), request.GET.get('longitude'), request.GET.get('distance'))
 
         events = self.queryset.filter(q).distinct().order_by('-id')
 

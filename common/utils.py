@@ -1,8 +1,12 @@
+from datetime import date
+
+import geopy.distance
 from django.db.models import Q
 
+from events.models import Event
 from events.models import Request, EventCategories
 from tickets.models import TicketCategories
-from token_auth.models import UserProfileCategories
+from token_auth.models import UserProfileCategories, UserProfile
 from .models import *
 
 
@@ -36,12 +40,61 @@ def not_taking_part(user):
     return ~Q(creator=user) & ~Q(members=user)
 
 
+def filter_by_text(text):
+    if text:
+        return Q(description__icontains=text)
+    else:
+        return Q()
+
+
 def filter_by_categories(list_categories):
     if list_categories:
-        categories = Category.objects.filter(name__in=list_categories).values_list('id', flat=True)
+        categories = SubCategory.objects.filter(name__in=list_categories).values_list('id', flat=True)
         return Q(categories__in=categories)
     else:
         return Q()
+
+
+def filter_by_sex(sex_list):
+    if sex_list:
+        user_profiles_ids = UserProfile.objects.filter(sex__in=map(lambda x: x.upper(), sex_list)).values_list('id',
+                                                                                                               flat=True)
+        return Q(creator_id__in=user_profiles_ids)
+    else:
+        return Q()
+
+
+def filter_by_geo(latitude, longitude, distance):
+    if latitude and longitude and distance:
+        events_ids = list([])
+        for event in Event.objects.all():
+            user = (float(latitude), float(longitude))
+            place = (event.geo_point.latitude, event.geo_point.longitude)
+
+            if geopy.distance.geodesic(user, place).km <= float(distance):
+                events_ids.append(event.id)
+
+        return Q(id__in=events_ids)
+
+    else:
+        return Q()
+
+
+def filter_by_age(from_age, to_age):
+    if from_age and to_age:
+        user_profiles_ids = list([])
+        for user_profile in UserProfile.objects.all():
+            if user_profile.date_of_birth and int(from_age) < calculate_age(user_profile.date_of_birth) < int(to_age):
+                user_profiles_ids.append(user_profile.id)
+
+        return Q(creator_id__in=user_profiles_ids)
+    else:
+        return Q()
+
+
+def calculate_age(born):
+    today = date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 
 def set_event_categories(categories, instance):
