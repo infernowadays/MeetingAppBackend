@@ -101,15 +101,15 @@ class MessageView(APIView):
         messages = event.messages.all().order_by('created')
 
         if request.GET.get('offset') is not None and request.GET.get('offset') != '':
-            first_message_id = request.GET.get('offset')
-            if int(first_message_id) == -1:
-                first_message_id = messages.order_by('-id')[0].id + 1
-            else:
-                first_message_id = int(first_message_id)
+            first_message_id = int(request.GET.get('offset'))
 
-            messages = messages.filter(id__lt=first_message_id)
-            if len(messages) > self.offset:
-                messages = messages[len(messages) - self.offset: len(messages)]
+            left = len(messages) - first_message_id - self.offset
+            left = 0 if left < 0 else left
+
+            right = len(messages) - first_message_id
+            right = 0 if right < 0 else right
+
+            messages = messages[left: right]
 
         serializer = MessageSerializer(instance=messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
