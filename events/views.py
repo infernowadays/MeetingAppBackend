@@ -69,8 +69,8 @@ class EventListView(APIView):
 
         if request.GET.get('offset') is not None and request.GET.get('offset') != '':
             last_event_id = request.GET.get('offset')
-            events = events.filter(id__gt=int(last_event_id))
-            events = events[len(events): len(events) + self.offset]
+            events = events.filter(id__lt=int(last_event_id))
+            events = events[:self.offset]
 
         serializer = self.serializer_class(instance=events, many=True)
 
