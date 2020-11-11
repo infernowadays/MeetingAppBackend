@@ -37,16 +37,17 @@ class EventSerializer(ModelSerializer):
         return event
 
     def update(self, instance, validated_data):
-        instance.description = validated_data.pop('description')
-        instance.date = validated_data.pop('date')
+        instance.description = validated_data.get('description', instance.description)
+        instance.date = validated_data.get('date', instance.date)
         instance.time = validated_data.get('time', instance.time)
+        instance.ended = validated_data.get('ended', instance.ended)
         instance.save()
 
-        categories = validated_data.pop('categories')
-        if categories is not None:
-            set_event_categories(categories, instance)
+        if validated_data.get('categories'):
+            set_event_categories(validated_data.get('categories'), instance)
 
-        set_geo_point(instance.geo_point, validated_data)
+        if validated_data.get('geo_point'):
+            set_geo_point(instance.geo_point, validated_data)
 
         return instance
 

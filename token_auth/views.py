@@ -156,6 +156,17 @@ class MyProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class ChangePasswordView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, request):
+        self.request.user.set_password(request.data.get('password'))
+        self.request.user.save()
+
+        return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+
+
 class FirebaseTokenView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)

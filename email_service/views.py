@@ -40,7 +40,7 @@ class GenerateConfirmationView(APIView):
 
     @staticmethod
     def send_email(to_email, code):
-        mail_subject = 'Активция аккаунта WALK'
+        mail_subject = 'Подтверждение email для аккаунта WALK'
         message = 'Код активации: ' + str(code)
 
         email = EmailMessage(
@@ -53,7 +53,7 @@ class GenerateConfirmationView(APIView):
         if serializer.is_valid():
             serializer.save(code=generate_confirmation_code())
 
-            self.send_email(to_email=serializer.data.get('email'), code=serializer.data.get('code'))
+            self.send_email(to_email=self.request.user.email, code=serializer.data.get('code'))
 
             return Response({}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

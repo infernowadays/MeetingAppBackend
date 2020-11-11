@@ -29,20 +29,29 @@ class EventListView(APIView):
     def get(self, request):
         q = Q()
 
+        user_id = request.GET.get('user_id')
+        if user_id is not None and user_id != '':
+            if UserProfile.objects.filter(id=user_id):
+                user = UserProfile.objects.filter(id=user_id)[0]
+            else:
+                user = self.request.user
+        else:
+            user = self.request.user
+
         if request.GET.get('text') is not None and request.GET.get('text') != '':
             q = q & filter_by_text(request.GET.get('text'))
 
         if request.GET.get('me') is not None and request.GET.get('me') != '':
             if request.GET.get('me') == 'part':
-                q = q & taking_part(user=request.user)
+                q = q & taking_part(user=user)
             elif request.GET.get('me') == 'not_part':
-                q = q & not_taking_part(user=request.user)
+                q = q & not_taking_part(user=user)
 
         if request.GET.get('requested') is not None and request.GET.get('requested') != '':
             if request.GET.get('requested') == 'not_answered':
-                q = q | not_answered_requests(user=request.user)
+                q = q | not_answered_requests(user=user)
             elif request.GET.get('requested') == 'not_requested':
-                q = q & not_requested_events(user=request.user)
+                q = q & not_requested_events(user=user)
 
         if request.GET.get('ended') is not None and request.GET.get('ended') != '':
             if request.GET.get('ended') == 'true':
@@ -60,7 +69,8 @@ class EventListView(APIView):
 
         if request.GET.get('offset') is not None and request.GET.get('offset') != '':
             last_event_id = request.GET.get('offset')
-            events = events[int(last_event_id): int(last_event_id) + self.offset]
+            events = events.filter(id__gt=int(last_event_id))
+            events = events[len(events): len(events) + self.offset]
 
         serializer = self.serializer_class(instance=events, many=True)
 
@@ -189,3 +199,4 @@ class RespondRequestView(APIView):
 
     def delete(self, request, pk):
         Request.objects.filter(pk=pk).delete()
+        return Response({'status': 'ok'}, status=status.HTTP_200_OK)

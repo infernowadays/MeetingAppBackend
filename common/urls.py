@@ -5,4 +5,6 @@ from .views import *
 
 urlpatterns = [
     path('categories/', csrf_exempt(CategoryListView.as_view())),
+    path('feedback/', csrf_exempt(FeedbackListView.as_view())),
+
 ]

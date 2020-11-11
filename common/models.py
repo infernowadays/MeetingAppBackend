@@ -14,3 +14,11 @@ class SubCategory(models.Model):
 
     class Meta:
         db_table = 'sub_category'
+
+
+class Feedback(models.Model):
+    text = models.TextField(null=False)
+    user = models.IntegerField(null=False, blank=True)
+
+    class Meta:
+        db_table = 'feedback'

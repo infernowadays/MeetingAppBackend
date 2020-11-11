@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from .models import Category, SubCategory
+from .models import Category, SubCategory, Feedback
 
 
 class CategorySerializer(ModelSerializer):
@@ -14,4 +14,10 @@ class SubCategorySerializer(ModelSerializer):
 
     class Meta:
         model = SubCategory
+        fields = '__all__'
+
+
+class FeedbackSerializer(ModelSerializer):
+    class Meta:
+        model = Feedback
         fields = '__all__'

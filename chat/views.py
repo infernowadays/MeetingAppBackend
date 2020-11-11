@@ -55,6 +55,7 @@ class ChatsView(APIView):
 class MessageView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
+    offset = 50
 
     @staticmethod
     def get_object(pk):
@@ -96,7 +97,20 @@ class MessageView(APIView):
 
     def get(self, request, event_id):
         event = self.get_object(event_id)
+
         messages = event.messages.all().order_by('created')
+
+        if request.GET.get('offset') is not None and request.GET.get('offset') != '':
+            first_message_id = request.GET.get('offset')
+            if int(first_message_id) == -1:
+                first_message_id = messages.order_by('-id')[0].id + 1
+            else:
+                first_message_id = int(first_message_id)
+
+            messages = messages.filter(id__lt=first_message_id)
+            if len(messages) > self.offset:
+                messages = messages[len(messages) - self.offset: len(messages)]
+
         serializer = MessageSerializer(instance=messages, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
