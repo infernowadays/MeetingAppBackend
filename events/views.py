@@ -1,6 +1,8 @@
+import requests
 from django.http import Http404
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -175,6 +177,14 @@ class RespondRequestView(APIView):
         except Request.DoesNotExist:
             raise Http404
 
+    @staticmethod
+    def send_message(event_id, user):
+        text = user + ' вступил в событие!'
+        data = {'event': event_id, 'text': text, 'is_systemic': True}
+        token = Token.objects.get(user=user)
+        headers = {'Content-Type': 'application/json', 'Authorization': 'Token ' + token}
+        requests.post('https://meetingappbackend.xyz:443/api/messages/', data=data, headers=headers)
+
     def put(self, request, pk):
         event_request = self.get_object(pk)
 
@@ -189,6 +199,7 @@ class RespondRequestView(APIView):
             if serializer.data.get('decision') == Decision.ACCEPT.value:
                 event.members.add(user)
                 decision = ' одобрил Вашу заявку :)'
+                self.send_message(event.id, user)
 
             self.send_websocket(serializer.data.get('id'))
 

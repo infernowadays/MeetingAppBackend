@@ -56,6 +56,7 @@ def send_message(message, members_ids):
             text=message.text,
             created=message.created,
             event=message.event.id,
+            is_systemic=message.is_systemic,
         )
     )
 

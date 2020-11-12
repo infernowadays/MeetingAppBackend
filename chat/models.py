@@ -11,6 +11,7 @@ class Message(models.Model):
     text = models.TextField(null=False, max_length=512)
     created = models.DateTimeField(auto_now=True)
     seen = models.BooleanField(default=False)
+    is_systemic = models.BooleanField(null=False, blank=True, default=False)
     event = models.ForeignKey(Event, null=False, db_constraint=True, on_delete=models.CASCADE, related_name='messages')
 
     class Meta:

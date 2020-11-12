@@ -53,13 +53,14 @@ class RequestEvent:
 
 
 class MessageEvent:
-    def __init__(self, from_user, id, text, created, event):
+    def __init__(self, from_user, id, text, created, event, is_systemic):
         self._type = "message_event"
         self._from_user = from_user
         self._id = id
         self._text = text
         self._created = created
         self._event = event
+        self._is_systemic = is_systemic
 
     @property
     def type(self):
@@ -86,6 +87,10 @@ class MessageEvent:
         return str(self._event)
 
     @property
+    def is_systemic(self):
+        return self._is_systemic
+
+    @property
     def properties_dict(self):
         return dict(
             type=self.type,
@@ -94,6 +99,7 @@ class MessageEvent:
             text=self.text,
             created=self.created,
             event=self.event,
+            is_systemic=self.is_systemic
         )
 
 
