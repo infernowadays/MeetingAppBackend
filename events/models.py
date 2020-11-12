@@ -55,3 +55,4 @@ class Request(models.Model):
 
     class Meta:
         db_table = 'request'
+        unique_together = ['event', 'to_user', 'from_user']
