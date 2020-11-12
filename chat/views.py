@@ -173,7 +173,7 @@ class LastSeenMessageListView(APIView):
     authentication_classes = (TokenAuthentication,)
 
     def post(self, request):
-        serializer = LastSeenMessageInChatSerializer(data=request.data)
+        serializer = LastSeenMessageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=self.request.user)
 
