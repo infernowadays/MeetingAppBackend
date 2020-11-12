@@ -77,10 +77,15 @@ class MessageView(APIView):
             members_ids=members_ids
         )
 
+    def see_previous_messages(self, data):
+        serializer = LastSeenMessageSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+
     def post(self, request):
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(from_user=request.user)
+            serializer.save(from_user=self.request.user)
 
             event = Event.objects.get(id=request.data['event'])
             members_ids = event.members \
@@ -97,6 +102,8 @@ class MessageView(APIView):
                     content_id=request.data.get('event'),
                     to_user_token=UserProfile.objects.get(pk=member_id).firebase_uid
                 )
+
+            self.see_previous_messages({'chat_id': event.id, 'message_id': serializer.data.get('id')})
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
