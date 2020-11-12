@@ -179,11 +179,11 @@ class RespondRequestView(APIView):
 
     @staticmethod
     def send_message(event_id, user):
-        text = user.first_name + "вступил в событие!"
+        text = user.first_name + " вступил в событие!"
         data = {"event": event_id, "text": text, "is_systemic": "true"}
         token = Token.objects.get(user=user)
         headers = {"Content-Type": "application/json", "Authorization": "Token " + token.key}
-        requests.post('https://meetingappbackend.xyz:443/api/messages/', data=data, headers=headers)
+        requests.post('https://meetingappbackend.xyz:443/api/messages/', json=data, headers=headers)
 
     def put(self, request, pk):
         event_request = self.get_object(pk)
