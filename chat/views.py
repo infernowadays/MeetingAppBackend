@@ -15,7 +15,49 @@ class ChatsView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
+    def init_chat(self, event, last_message):
+        chat = dict({})
+        chat['content_type'] = 'message'
+        chat['content_id'] = event.id
+        chat['title'] = event.description
+        chat['from_user'] = event.creator
+
+        if last_message == '':
+            chat['last_message'] = ''
+            chat['last_message_id'] = 0
+            chat['last_seen_message_id'] = 0
+            chat['last_message_created'] = str(event.created).replace(' ', 'T').replace('+00:00', 'Z')
+            chat['last_message_from_user_name'] = ''
+
+        else:
+            chat['last_message'] = last_message.text
+            chat['last_message_id'] = last_message.id
+            try:
+                chat['last_seen_message_id'] = \
+                    self.request.user.last_messages.filter(chat_id=event.id).order_by('-message_id')[0].message_id
+            except IndexError:
+                chat['last_seen_message_id'] = 0
+            chat['last_message_created'] = str(last_message.created).replace(' ', 'T').replace('+00:00', 'Z')
+            chat['last_message_from_user_name'] = last_message.from_user.first_name
+
+        return chat
+
+    @staticmethod
+    def get_last_message(event_id):
+        try:
+            last_message = Message.objects.filter(event_id=event_id).order_by("-id")[0]
+        except IndexError:
+            last_message = ''
+
+        return last_message
+
     def get(self, request):
+        if request.GET.get('chat_id') is not None and request.GET.get('chat_id') != '':
+            event = Event.objects.get(id=request.GET.get('chat_id'))
+            last_message = self.get_last_message(event.id)
+            serializer = ChatSerializer(instance=[self.init_chat(event, last_message)], many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         members_events = request.user.members_events.all()
         creator_events = request.user.creator_events.all()
         events = set(members_events | creator_events)
@@ -23,36 +65,8 @@ class ChatsView(APIView):
         chats = list([])
         # messages from events
         for event in events:
-            try:
-                last_message = Message.objects.filter(event_id=event.id).order_by("-id")[0]
-            except IndexError:
-                last_message = ''
-
-            chat = dict({})
-            chat['content_type'] = 'message'
-            chat['content_id'] = event.id
-            chat['title'] = event.description
-            chat['from_user'] = event.creator
-
-            if last_message == '':
-                chat['last_message'] = ''
-                chat['last_message_id'] = 0
-                chat['last_seen_message_id'] = 0
-                chat['last_message_created'] = 0
-                chat['last_message_from_user_name'] = ''
-
-            else:
-                chat['last_message'] = last_message.text
-                chat['last_message_id'] = last_message.id
-                try:
-                    chat['last_seen_message_id'] = \
-                        self.request.user.last_messages.filter(chat_id=event.id).order_by('-message_id')[0].message_id
-                except IndexError:
-                    chat['last_seen_message_id'] = 0
-                chat['last_message_created'] = str(last_message.created).replace(' ', 'T').replace('+00:00', 'Z')
-                chat['last_message_from_user_name'] = last_message.from_user.first_name
-
-            chats.append(chat)
+            last_message = self.get_last_message(event.id)
+            chats.append(self.init_chat(event, last_message))
 
         serializer = ChatSerializer(instance=chats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
