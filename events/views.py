@@ -179,7 +179,7 @@ class RespondRequestView(APIView):
 
     @staticmethod
     def send_message(event_id, user):
-        text = user + ' вступил в событие!'
+        text = user.first_name + ' вступил в событие!'
         data = {'event': event_id, 'text': text, 'is_systemic': True}
         token = Token.objects.get(user=user)
         headers = {'Content-Type': 'application/json', 'Authorization': 'Token ' + token}
