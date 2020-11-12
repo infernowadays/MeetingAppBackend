@@ -103,6 +103,7 @@ class MessageView(APIView):
             serializer.save(from_user=self.request.user)
 
             event = Event.objects.get(id=request.data['event'])
+            print(event)
             members_ids = event.members \
                 .all() \
                 .filter(~Q(id=request.user.id)) \
@@ -110,6 +111,7 @@ class MessageView(APIView):
 
             self.send_websocket(serializer.data.get('id'), members_ids)
             for member_id in members_ids:
+                print(member_id)
                 send_firebase_push(
                     title=request.user.first_name + ' ' + request.user.last_name,
                     message=request.data.get('text'),
