@@ -52,6 +52,14 @@ class EventSerializer(ModelSerializer):
         return instance
 
 
+class ExtendedEventSerializer(EventSerializer):
+    requested = serializers.BooleanField()
+
+    class Meta:
+        model = Event
+        fields = '__all__'
+
+
 class RequestSerializer(ModelSerializer):
     to_user = UserProfileSerializer(read_only=True)
     event = serializers.IntegerField(source='event.id', read_only=True)

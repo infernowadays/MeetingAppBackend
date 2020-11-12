@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from token_auth.serializers import UserProfileSerializer
-from .models import Message, PrivateMessage
+from .models import Message, PrivateMessage, LastSeenMessage
 
 
 class MessageSerializer(ModelSerializer):
@@ -32,6 +32,15 @@ class PrivateMessageSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class LastSeenMessageSerializer(ModelSerializer):
+    user = UserProfileSerializer(read_only=True)
+    message = MessageSerializer(read_only=True)
+
+    class Meta:
+        model = LastSeenMessage
+        fields = '__all__'
+
+
 class ChatSerializer(serializers.Serializer):
     content_type = serializers.CharField()
     content_id = serializers.IntegerField()
@@ -39,5 +48,6 @@ class ChatSerializer(serializers.Serializer):
     from_user = UserProfileSerializer(read_only=True)
     last_message = serializers.CharField()
     last_message_id = serializers.IntegerField()
+    last_seen_message_id = serializers.IntegerField()
     last_message_created = serializers.CharField()
     last_message_from_user_name = serializers.CharField()

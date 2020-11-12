@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 
 from chat.models import Message
 from events.enums import Decision
-from events.models import Request, Event
+from events.models import Request
 from .serializers import *
 
 
@@ -111,17 +111,7 @@ class MyProfileView(APIView):
         serializer = UserProfileSerializer(self.request.user)
         serializer_data = serializer.data
 
-        if request.GET.get('last_seen_message_ids') is None:
-            serializer_data['new_messages_count'] = 0
-
-            return Response(serializer_data, status=status.HTTP_200_OK)
-
-        last_seen_message_ids = list([])
-
-        if request.GET.get('last_seen_message_ids') is not None:
-            last_seen_message_ids = request.GET.get('last_seen_message_ids').split(',')
-            last_seen_message_ids.pop()
-
+        # new requests count
         q_accepted_and_declined = Q() | Q(decision=Decision.ACCEPT.value) | Q(decision=Decision.DECLINE.value)
         q_accepted_and_declined_for_sender = q_accepted_and_declined & Q(from_user=self.request.user)
         q_not_answered_for_receiver = Q() | Q(decision=Decision.NO_ANSWER.value) & Q(to_user=self.request.user)
@@ -130,19 +120,11 @@ class MyProfileView(APIView):
         new_requests_count = Request.objects.filter(q_not_seen_requests_for_user).count()
         serializer_data['new_requests_count'] = new_requests_count
 
-        events_ids = Event.objects.filter(
-            Q(creator=self.request.user) | Q(members=self.request.user)).values_list('id', flat=True).order_by('id')[
-                     :len(last_seen_message_ids)]
-
+        # new messages count
         new_messages_count = 0
-
-        for i in range(len(events_ids)):
-            print(events_ids[i])
-            print(last_seen_message_ids[i])
-
-            new_messages_count += Message.objects.filter(
-                Q(event_id=events_ids[i]) & ~Q(from_user=self.request.user) & Q(
-                    id__gt=last_seen_message_ids[i])).count()
+        for last_message in self.request.user.last_messages.all():
+            if last_message.message_id - Message.objects.filter(event_id=last_message.chat_id).order_by('-id')[0].id != 0:
+                new_messages_count += 1
 
         serializer_data['new_messages_count'] = new_messages_count
 

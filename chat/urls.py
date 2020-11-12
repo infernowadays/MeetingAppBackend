@@ -9,6 +9,8 @@ urlpatterns = [
     path('messages/<int:event_id>/', csrf_exempt(MessageView.as_view())),
     path('messages/', csrf_exempt(MessageView.as_view())),
 
+    path('new_messages/', csrf_exempt(LastSeenMessageListView.as_view())),
+
     path('private-messages/<int:user_id>/', csrf_exempt(PrivateMessageView.as_view())),
     path('private-messages/', csrf_exempt(PrivateMessageView.as_view())),
 ]

@@ -36,13 +36,19 @@ class ChatsView(APIView):
 
             if last_message == '':
                 chat['last_message'] = ''
-                chat['last_message_id'] = -1
+                chat['last_message_id'] = 0
+                chat['last_seen_message_id'] = 0
                 chat['last_message_created'] = 0
                 chat['last_message_from_user_name'] = ''
 
             else:
                 chat['last_message'] = last_message.text
                 chat['last_message_id'] = last_message.id
+                try:
+                    chat['last_seen_message_id'] = \
+                        self.request.user.last_messages.filter(chat_id=event.id).order_by('-message_id')[0].message_id
+                except IndexError:
+                    chat['last_seen_message_id'] = 0
                 chat['last_message_created'] = str(last_message.created).replace(' ', 'T').replace('+00:00', 'Z')
                 chat['last_message_from_user_name'] = last_message.from_user.first_name
 
@@ -160,3 +166,16 @@ class PrivateMessageView(APIView):
         serializer = PrivateMessageSerializer(instance=messages, many=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class LastSeenMessageListView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    def post(self, request):
+        serializer = LastSeenMessageInChatSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=self.request.user)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

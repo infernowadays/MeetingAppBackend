@@ -8,13 +8,13 @@ from rest_framework.views import APIView
 from common.utils import *
 from realtime.messaging import send_event_request, send_event_response_request, send_firebase_push
 from .models import *
-from .serializers import EventSerializer, RequestSerializer
+from .serializers import EventSerializer, RequestSerializer, ExtendedEventSerializer
 
 
 class EventListView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
-    serializer_class = EventSerializer
+    serializer_class = ExtendedEventSerializer
     queryset = Event.objects.all()
     offset = 15
 
@@ -70,6 +70,13 @@ class EventListView(APIView):
         if request.GET.get('offset') is not None and request.GET.get('offset') != '':
             last_event_id = request.GET.get('offset')
             events = events[int(last_event_id): int(last_event_id) + self.offset]
+
+        for event in events:
+            try:
+                event.requested = True if Request.objects.get(from_user=user, event=event,
+                                                              decision=Decision.NO_ANSWER.value) else False
+            except Request.DoesNotExist:
+                event.requested = False
 
         serializer = self.serializer_class(instance=events, many=True)
 
