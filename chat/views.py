@@ -97,6 +97,7 @@ class MessageView(APIView):
             serializer.save(user=self.request.user)
 
     def post(self, request):
+        print(request.data)
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(from_user=self.request.user)
