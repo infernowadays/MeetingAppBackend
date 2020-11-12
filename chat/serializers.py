@@ -36,6 +36,16 @@ class LastSeenMessageSerializer(ModelSerializer):
     user = UserProfileSerializer(read_only=True)
     message = MessageSerializer(read_only=True)
 
+    def create(self, validated_data):
+        db_row = LastSeenMessage.objects.filter(chat_id=validated_data.get('chat_id'), user=validated_data.get('user'))
+        if db_row:
+            db_row.update(message_id=validated_data.get('message_id'))
+            last_seen_message = db_row[0]
+        else:
+            last_seen_message = LastSeenMessage.objects.create(**validated_data)
+
+        return last_seen_message
+
     class Meta:
         model = LastSeenMessage
         fields = '__all__'
