@@ -113,10 +113,11 @@ class MyProfileView(APIView):
 
         # new requests count
         q_accepted_and_declined = Q() | Q(decision=Decision.ACCEPT.value) | Q(decision=Decision.DECLINE.value)
-        q_accepted_and_declined_for_sender = q_accepted_and_declined & Q(from_user=self.request.user)
-        q_not_answered_for_receiver = Q() | Q(decision=Decision.NO_ANSWER.value) & Q(to_user=self.request.user)
-        q_not_seen_requests_for_user = (q_accepted_and_declined_for_sender | q_not_answered_for_receiver)
+        q_accepted_and_declined_for_sender = q_accepted_and_declined & Q(from_user=self.request.user) & Q(seen=False)
 
+        q_not_answered_for_receiver = Q() | Q(decision=Decision.NO_ANSWER.value) & Q(to_user=self.request.user)
+
+        q_not_seen_requests_for_user = (q_accepted_and_declined_for_sender | q_not_answered_for_receiver)
         new_requests_count = Request.objects.filter(q_not_seen_requests_for_user).count()
         serializer_data['new_requests_count'] = new_requests_count
 
