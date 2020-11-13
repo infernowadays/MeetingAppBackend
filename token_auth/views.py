@@ -111,23 +111,24 @@ class MyProfileView(APIView):
         serializer = UserProfileSerializer(self.request.user)
         serializer_data = serializer.data
 
-        # new requests count
         q_accepted_and_declined = Q() | Q(decision=Decision.ACCEPT.value) | Q(decision=Decision.DECLINE.value)
         q_accepted_and_declined_for_sender = q_accepted_and_declined & Q(from_user=self.request.user) & Q(seen=False)
-
         q_not_answered_for_receiver = Q() | Q(decision=Decision.NO_ANSWER.value) & Q(to_user=self.request.user)
-
         q_not_seen_requests_for_user = (q_accepted_and_declined_for_sender | q_not_answered_for_receiver)
-        new_requests_count = Request.objects.filter(q_not_seen_requests_for_user).count()
-        serializer_data['new_requests_count'] = new_requests_count
+        requests = Request.objects.filter(q_not_seen_requests_for_user).values('id', 'from_user', 'to_user', 'decision',
+                                                                               'seen')
+        serializer_data['requests'] = requests
 
-        # new messages count
-        new_messages_count = 0
+        chats = list([])
         for last_seen_message in self.request.user.last_messages.all():
-            if Message.objects.filter(event_id=last_seen_message.chat_id).order_by('-id')[0].id > last_seen_message.message_id > 0:
-                new_messages_count += 1
+            event_messages = Message.objects.filter(event_id=last_seen_message.chat_id).order_by('-id')
+            if event_messages[0].id > last_seen_message.message_id > 0:
+                chat['last_seen_message_id'] = last_seen_message.message_id
+                chat['last_message_id'] = event_messages[0].id
+                chat['content_id'] = last_seen_message.chat_id
+                chats.append(chat)
 
-        serializer_data['new_messages_count'] = new_messages_count
+        serializer_data['chats'] = chats
 
         return Response(serializer_data, status=status.HTTP_200_OK)
 
