@@ -194,7 +194,10 @@ class RespondRequestView(APIView):
 
             if 'seen' in request.data:
                 serializer.save()
+                print('seen')
                 return Response(serializer.data)
+
+            print('not seen')
 
             decision = ' отклонил Вашу заявку :('
             event = Event.objects.get(id=serializer.data.get('event'))
