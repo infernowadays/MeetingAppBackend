@@ -193,7 +193,6 @@ class RespondRequestView(APIView):
             serializer.save()
 
             if serializer.data.get('seen'):
-                serializer.save()
                 print('seen')
                 return Response(serializer.data)
 
