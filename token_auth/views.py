@@ -123,6 +123,7 @@ class MyProfileView(APIView):
         for last_seen_message in self.request.user.last_messages.all():
             event_messages = Message.objects.filter(event_id=last_seen_message.chat_id).order_by('-id')
             if event_messages[0].id > last_seen_message.message_id > 0:
+                chat = dict({})
                 chat['last_seen_message_id'] = last_seen_message.message_id
                 chat['last_message_id'] = event_messages[0].id
                 chat['content_id'] = last_seen_message.chat_id
