@@ -192,7 +192,7 @@ class RespondRequestView(APIView):
         if serializer.is_valid():
             serializer.save()
 
-            if not serializer.data.get('seen'):
+            if serializer.data.get('seen'):
                 serializer.save()
                 print('seen')
                 return Response(serializer.data)
