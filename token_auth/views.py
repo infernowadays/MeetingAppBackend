@@ -123,8 +123,8 @@ class MyProfileView(APIView):
 
         # new messages count
         new_messages_count = 0
-        for last_message in self.request.user.last_messages.all():
-            if last_message.message_id - Message.objects.filter(event_id=last_message.chat_id).order_by('-id')[0].id != 0:
+        for last_seen_message in self.request.user.last_messages.all():
+            if Message.objects.filter(event_id=last_seen_message.chat_id).order_by('-id')[0].id > last_seen_message.message_id > 0:
                 new_messages_count += 1
 
         serializer_data['new_messages_count'] = new_messages_count
