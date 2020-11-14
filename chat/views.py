@@ -88,13 +88,12 @@ class MessageView(APIView):
         message = Message.objects.get(pk=pk)
 
         chat = dict({})
-        chat['last_message'] = message.text
         chat['last_message_id'] = message.id
         chat['content_id'] = message.event.id
 
         try:
             chat['last_seen_message_id'] = \
-                self.request.user.last_messages.filter(chat_id=event.id).order_by('-message_id')[0].message_id
+                self.request.user.last_messages.filter(chat_id=message.event.id).order_by('-message_id')[0].message_id
         except IndexError:
             chat['last_seen_message_id'] = 0
 
