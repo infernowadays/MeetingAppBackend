@@ -8,8 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from chat.models import Message
+from chat.models import Message, LastSeenMessage
 from events.enums import Decision
+from events.models import Event
 from events.models import Request
 from .serializers import *
 
@@ -119,15 +120,32 @@ class MyProfileView(APIView):
                                                                                'seen')
         serializer_data['requests'] = requests
 
+        # for last_seen_message in self.request.user.last_messages.all():
+        #     event_messages = Message.objects.filter(event_id=last_seen_message.chat_id).order_by('-id')
+        #     if event_messages and event_messages[0].id > last_seen_message.message_id > 0:
+        #         chat = dict({})
+        #         chat['last_seen_message_id'] = last_seen_message.message_id
+        #         chat['last_message_id'] = event_messages[0].id
+        #         chat['content_id'] = last_seen_message.chat_id
+        #         chats.append(chat)
+
         chats = list([])
-        for last_seen_message in self.request.user.last_messages.all():
-            event_messages = Message.objects.filter(event_id=last_seen_message.chat_id).order_by('-id')
-            if event_messages[0].id > last_seen_message.message_id > 0:
-                chat = dict({})
-                chat['last_seen_message_id'] = last_seen_message.message_id
+        events = Event.objects.filter(Q(creator=self.request.user) | Q(members=self.request.user))
+        for event in events:
+            chat = dict({})
+            chat['content_id'] = event.id
+            event_messages = Message.objects.filter(event=event).order_by('-id')
+
+            try:
+                chat['last_seen_message_id'] = LastSeenMessage.objects.get(chat_id=event.id).message_id
+            except LastSeenMessage.DoesNotExist:
+                chat['last_seen_message_id'] = 0
+
+            if len(event_messages) > 0:
                 chat['last_message_id'] = event_messages[0].id
-                chat['content_id'] = last_seen_message.chat_id
-                chats.append(chat)
+
+                if event_messages[0].id > chat.get('last_seen_message_id'):
+                    chats.append(chat)
 
         serializer_data['chats'] = chats
 
