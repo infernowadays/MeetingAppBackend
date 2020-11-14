@@ -44,7 +44,7 @@ def send_event_response_request(event_request):
     )
 
 
-def send_message(message, members_ids):
+def send_message(message, members_ids, chat):
     fields = ('id', 'first_name', 'last_name', 'photo')
     from_user = UserProfileSerializer(UserProfile.objects.get(email=message.from_user), fields=fields).data
 
@@ -52,6 +52,7 @@ def send_message(message, members_ids):
         to_user_ids=members_ids,
         realtime_event=MessageEvent(
             from_user=from_user,
+            chat=chat,
             id=message.id,
             text=message.text,
             created=message.created,

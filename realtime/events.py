@@ -53,9 +53,10 @@ class RequestEvent:
 
 
 class MessageEvent:
-    def __init__(self, from_user, id, text, created, event, is_systemic):
+    def __init__(self, from_user, chat, id, text, created, event, is_systemic):
         self._type = "message_event"
         self._from_user = from_user
+        self._chat = chat
         self._id = id
         self._text = text
         self._created = created
@@ -69,6 +70,10 @@ class MessageEvent:
     @property
     def from_user(self):
         return self._from_user
+
+    @property
+    def chat(self):
+        return self._chat
 
     @property
     def id(self):
@@ -95,6 +100,7 @@ class MessageEvent:
         return dict(
             type=self.type,
             from_user=self.from_user,
+            chat=self.chat,
             id=self.id,
             text=self.text,
             created=self.created,

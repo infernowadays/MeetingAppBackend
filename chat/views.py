@@ -84,11 +84,24 @@ class MessageView(APIView):
         except Event.DoesNotExist:
             raise Http404
 
-    @staticmethod
-    def send_websocket(pk, members_ids):
+    def send_websocket(self, pk, members_ids):
+        message = Message.objects.get(pk=pk)
+
+        chat = dict({})
+        chat['last_message'] = message.text
+        chat['last_message_id'] = message.id
+        chat['content_id'] = message.event.id
+
+        try:
+            chat['last_seen_message_id'] = \
+                self.request.user.last_messages.filter(chat_id=event.id).order_by('-message_id')[0].message_id
+        except IndexError:
+            chat['last_seen_message_id'] = 0
+
         send_message(
-            message=Message.objects.get(pk=pk),
-            members_ids=members_ids
+            message=message,
+            members_ids=members_ids,
+            chat=chat
         )
 
     def see_previous_messages(self, data):
@@ -110,6 +123,7 @@ class MessageView(APIView):
                 .values_list('id', flat=True)
 
             self.send_websocket(serializer.data.get('id'), members_ids)
+
             for member_id in members_ids:
                 print(member_id)
                 send_firebase_push(
