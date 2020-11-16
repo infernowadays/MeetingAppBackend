@@ -23,7 +23,7 @@ class ComplaintListView(APIView):
                     suspected = Event.objects.get(id=request.data.get('content_id')).creator
                 except Event.DoesNotExist:
                     raise Http404
-            elif data.get('content_type') == 'PROFILE':
+            elif request.data.get('content_type') == 'PROFILE':
                 try:
                     suspected = UserProfile.objects.get(id=request.data.get('content_id'))
                 except UserProfile.DoesNotExist:
