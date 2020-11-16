@@ -1,9 +1,11 @@
+from django.http import Http404
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from events.models import Event
 from token_auth.models import UserProfile
 from .models import Complaint, UserProfileWarning
 from .serializers import ComplaintSerializer, UserProfileWarningSerializer
@@ -16,7 +18,20 @@ class ComplaintListView(APIView):
     def post(self, request):
         serializer = ComplaintSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            if request.data.get('content_type') == 'EVENT':
+                try:
+                    suspected = Event.objects.get(id=request.data.get('content_id')).creator
+                except Event.DoesNotExist:
+                    raise Http404
+            elif data.get('content_type') == 'PROFILE':
+                try:
+                    suspected = UserProfile.objects.get(id=request.data.get('content_id'))
+                except UserProfile.DoesNotExist:
+                    raise Http404
+            else:
+                raise Http404
+
+            serializer.save(supplier=self.request.user, suspected=suspected)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

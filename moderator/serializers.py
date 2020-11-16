@@ -7,6 +7,7 @@ from .models import Complaint, UserProfileWarning
 
 class ComplaintSerializer(ModelSerializer):
     suspected = UserProfileSerializer(read_only=True)
+    supplier = UserProfileSerializer(read_only=True)
 
     class Meta:
         model = Complaint
