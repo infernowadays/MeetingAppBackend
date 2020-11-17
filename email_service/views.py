@@ -28,6 +28,8 @@ class CheckConfirmationCodeView(APIView):
         if not confirmation or not user_profile:
             raise Http404
 
+        print(code)
+        print(confirmation.code)
         if code == str(confirmation.code):
             user_profile.update(is_confirmed=True)
             return Response({}, status=status.HTTP_202_ACCEPTED)
