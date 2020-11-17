@@ -63,6 +63,7 @@ class ExtendedEventSerializer(EventSerializer):
 class RequestSerializer(ModelSerializer):
     to_user = UserProfileSerializer(read_only=True)
     event = serializers.IntegerField(source='event.id', read_only=True)
+    title = serializers.CharField(source='event.description', read_only=True)
     from_user = UserProfileSerializer(read_only=True)
 
     class Meta:
