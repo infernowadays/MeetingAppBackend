@@ -23,13 +23,13 @@ class CheckConfirmationCodeView(APIView):
         except KeyError:
             raise Http404
 
+        user_profile = UserProfile.objects.filter(email=email)
         confirmation = ConfirmationCode.objects.filter(email=email).order_by('-id')[0]
-        if not confirmation or not UserProfile.objects.filter(email=email):
+        if not confirmation or not user_profile:
             raise Http404
 
         if str(code) == str(confirmation.code):
-            user = UserProfile.objects.get(email=email)
-            user.update(is_confirmed=True)
+            user_profile.update(is_confirmed=True)
             return Response({}, status=status.HTTP_202_ACCEPTED)
         return Response({}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
