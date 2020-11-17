@@ -2,7 +2,7 @@ from django.core.mail import EmailMessage
 from django.http import Http404
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -24,7 +24,7 @@ class CheckConfirmationCodeView(APIView):
             raise Http404
 
         user_profile = UserProfile.objects.filter(email=email)
-        confirmation = ConfirmationCode.objects.filter(email=email)
+        confirmation = ConfirmationCode.objects.filter(email=email).order_by('-id')
         if not confirmation or not user_profile:
             raise Http404
 
@@ -35,13 +35,12 @@ class CheckConfirmationCodeView(APIView):
 
 
 class GenerateConfirmationView(APIView):
-    permission_classes = (IsAuthenticated,)
-    authentication_classes = (TokenAuthentication,)
+    permission_classes = (AllowAny,)
 
     @staticmethod
     def send_email(to_email, code):
         mail_subject = 'Подтверждение email для аккаунта WALK'
-        message = 'Код активации: ' + str(code)
+        message = 'Код: ' + str(code)
 
         email = EmailMessage(
             mail_subject, message, to=[to_email]
@@ -53,7 +52,7 @@ class GenerateConfirmationView(APIView):
         if serializer.is_valid():
             serializer.save(code=generate_confirmation_code())
 
-            self.send_email(to_email=self.request.user.email, code=serializer.data.get('code'))
+            self.send_email(to_email=serializer.data.get('email'), code=serializer.data.get('code'))
 
-            return Response({}, status=status.HTTP_201_CREATED)
+            return Response({'status': 'ok'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

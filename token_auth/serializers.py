@@ -1,10 +1,10 @@
+from rest_framework import serializers
 from rest_framework.authtoken.models import Token
 from rest_framework.serializers import ModelSerializer, Serializer
 
 from common.serializers import SubCategorySerializer
 from common.utils import set_user_profile_categories
 from .models import UserProfile, ProfilePhoto
-from rest_framework import serializers
 
 
 class DynamicFieldsModelSerializer(ModelSerializer):
@@ -81,3 +81,9 @@ class UserProfileSerializer(DynamicFieldsModelSerializer):
 class AuthCredentialsSerializers(Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True)
+
+
+class ForgetPasswordSerializers(Serializer):
+    email = serializers.EmailField(required=True)
+    code = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)

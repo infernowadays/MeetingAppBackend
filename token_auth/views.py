@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from chat.models import Message, LastSeenMessage
+from email_service.models import ConfirmationCode
 from events.enums import Decision
 from events.models import Event
 from events.models import Request
@@ -42,6 +43,31 @@ class LoginView(APIView):
         token, _ = Token.objects.get_or_create(user=user)
 
         return Response({'token': token.key})
+
+
+class ForgetPasswordView(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = ForgetPasswordSerializers(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        validated_data = serializer.validated_data
+
+        email = validated_data['email']
+        code = validated_data['code']
+
+        confirmation = ConfirmationCode.objects.filter(email=email).order_by('-id')[0]
+        if not confirmation or not UserProfile.objects.filter(email=email):
+            raise Http404
+
+        if code == str(confirmation.code):
+            user = UserProfile.objects.get(email=email)
+            user.set_password(validated_data['new_password'])
+            user.save()
+            Token.objects.get_or_create(user=user)
+            return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'status': 'wrong code'}, status=status.HTTP_404_NOT_FOUND)
 
 
 class UploadPhotoView(APIView):
