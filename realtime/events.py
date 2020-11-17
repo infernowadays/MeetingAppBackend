@@ -2,10 +2,11 @@ WEBSOCKET_DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 class RequestEvent:
-    def __init__(self, id, event, from_user, to_user, decision, created):
+    def __init__(self, id, event, title, from_user, to_user, decision, created):
         self._type = "request_event"
         self._id = id
         self._event = event
+        self._title = title
         self._from_user = from_user
         self._to_user = to_user
         self._decision = decision
@@ -22,6 +23,10 @@ class RequestEvent:
     @property
     def event(self):
         return str(self._event)
+
+    @property
+    def title(self):
+        return self._title
 
     @property
     def from_user(self):
@@ -45,6 +50,7 @@ class RequestEvent:
             type=self.type,
             id=self.id,
             event=self.event,
+            title=self.title,
             from_user=self.from_user,
             to_user=self.to_user,
             decision=self.decision,

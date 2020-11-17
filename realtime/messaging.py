@@ -18,6 +18,7 @@ def send_event_request(event_request):
         realtime_event=RequestEvent(
             id=event_request.id,
             event=event_request.event.id,
+            title=event_request.event.description,
             from_user=from_user,
             to_user=to_user,
             decision=event_request.decision,
@@ -36,6 +37,7 @@ def send_event_response_request(event_request):
         realtime_event=RequestEvent(
             id=event_request.id,
             event=event_request.event.id,
+            title=event_request.event.description,
             from_user=from_user,
             to_user=to_user,
             decision=event_request.decision,
