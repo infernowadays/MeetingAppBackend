@@ -183,9 +183,8 @@ class MyProfileView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, pk):
-        user = self.get_object(pk)
-        user.delete()
+    def delete(self, request):
+        self.request.user.delete()
         return Response(status=status.HTTP_200_OK)
 
 
