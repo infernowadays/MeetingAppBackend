@@ -246,6 +246,11 @@ class RespondRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        request = self.get_object(pk)
+        event = Event.objects.filter(pk=pk)
+        try:
+            request = Request.objects.get(from_user=self.request.user, event=event[0])
+        except Request.DoesNotExist:
+            return Response(status=status.HTTP_200_OK)
+
         request.delete()
         return Response(status=status.HTTP_200_OK)
