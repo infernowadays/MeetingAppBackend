@@ -116,6 +116,13 @@ class MyProfileView(APIView):
     permission_classes = (IsAuthenticated,)
     authentication_classes = (TokenAuthentication,)
 
+    @staticmethod
+    def get_object(pk):
+        try:
+            return UserProfile.objects.get(pk=pk)
+        except UserProfile.DoesNotExist:
+            raise Http404
+
     def post(self, request):
         user = request.user
         try:
@@ -175,6 +182,11 @@ class MyProfileView(APIView):
             serializer.save(categories=request.data.get('categories'))
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        user = self.get_object(pk)
+        user.delete()
+        return Response(status=status.HTTP_200_OK)
 
 
 class ChangePasswordView(APIView):

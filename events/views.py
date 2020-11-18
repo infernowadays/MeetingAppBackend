@@ -112,7 +112,32 @@ class EventDetailView(APIView):
     def delete(self, request, pk):
         event = self.get_object(pk)
         event.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_200_OK)
+
+
+class EventMembersView(APIView):
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+
+    @staticmethod
+    def get_event(pk):
+        try:
+            return Event.objects.get(pk=pk)
+        except Event.DoesNotExist:
+            raise Http404
+
+    @staticmethod
+    def get_user(uid):
+        try:
+            return UserProfile.objects.get(id=uid)
+        except UserProfile.DoesNotExist:
+            raise Http404
+
+    def delete(self, request, pk, uid):
+        event = self.get_event(pk)
+        user = self.get_user(uid)
+        event.members.remove(user)
+        return Response(status=status.HTTP_200_OK)
 
 
 class RequestListView(APIView):
@@ -221,5 +246,6 @@ class RespondRequestView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
-        Request.objects.filter(pk=pk).delete()
-        return Response({'status': 'ok'}, status=status.HTTP_200_OK)
+        request = self.get_object(pk)
+        request.delete()
+        return Response(status=status.HTTP_200_OK)
