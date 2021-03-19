@@ -18,7 +18,7 @@ cryptography==2.9
 daphne==2.4.1
 dj-config-url==0.1.1
 dj-database-url==0.5.0
-Django==3.0.3
+Django==3.1.6
 django-environ==0.4.5
 django-heroku==0.3.1
 djangorestframework==3.11.0
