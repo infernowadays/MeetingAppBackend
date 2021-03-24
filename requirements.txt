@@ -56,7 +56,7 @@ PyJWT==1.7.1
 pyOpenSSL==19.1.0
 pytz==2019.3
 requests==2.23.0
-rsa==4.0
+rsa==4.1
 service-identity==18.1.0
 six==1.14.0
 sqlparse==0.3.0
